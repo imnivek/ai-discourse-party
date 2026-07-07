@@ -111,7 +111,13 @@ img{max-width:100%;display:block;}
 /* ============================================================
    排版
    ============================================================ */
-.container{width:min(1200px,100%);margin-inline:auto;padding-inline:24px;}
+.container{width:min(1200px,100%);margin-inline:auto;padding-inline:24px;position:relative;z-index:1;}
+/* 五型別 element sprite 區塊裝飾（低調漂浮，不干擾文字）*/
+.sec-deco{position:absolute;z-index:0;pointer-events:none;width:clamp(56px,8vw,104px);opacity:.5;
+  filter:drop-shadow(0 6px 8px rgba(40,30,20,.12));animation:sec-deco-bob 5s ease-in-out infinite;}
+@keyframes sec-deco-bob{0%,100%{transform:translateY(0) rotate(-4deg);}50%{transform:translateY(-10px) rotate(4deg);}}
+@media (max-width:640px){.sec-deco{display:none;}}
+@media (prefers-reduced-motion:reduce){.sec-deco{animation:none;}}
 .section{padding-block:92px;position:relative;}
 .eyebrow{
   font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.22em;
@@ -321,58 +327,71 @@ img{max-width:100%;display:block;}
 .radar-wrap__tag{position:absolute;top:-11px;right:18px;}
 
 /* ============================================================
-   思辨方塊遊戲 dg-*（Brand.deliberationGame 注入）— 格狀 Tetris
+   思辨採集遊戲 dg2-*（Brand.deliberationGame 注入）— 2D 卷軸選角
    ============================================================ */
 .dg{display:block;}
-.dg-wrap{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:18px;align-items:start;}
-.dg-board-col{position:relative;background:var(--card);border:1.5px solid var(--red);border-radius:var(--radius-lg);
-  box-shadow:var(--soft);overflow:hidden;}
-.dg-canvas{display:block;}
-.dg-canvas canvas{display:block;margin:0 auto;touch-action:none;}
-.dg-current{padding:8px 12px;font-family:var(--font-mono);font-size:.72rem;color:var(--ink-soft);
-  border-bottom:1px solid var(--line);background:var(--paper);text-align:center;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.dg-current b{color:var(--red);font-family:var(--font-body);}
-.dg-overlay{position:absolute;inset:0;z-index:5;display:none;flex-direction:column;justify-content:center;align-items:center;gap:14px;
-  background:rgba(26,22,19,.72);backdrop-filter:blur(3px);color:#F8F1E4;text-align:center;padding:20px;}
-.dg-overlay.is-show{display:flex;}
-.dg-overlay h4{font-family:var(--font-display);font-weight:900;font-size:1.8rem;}
-.dg-overlay p{font-family:var(--font-mono);font-size:.82rem;opacity:.85;}
-.dg-side{display:flex;flex-direction:column;gap:14px;}
-.dg-panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--soft-sm);padding:14px;}
-.dg-panel h5{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;}
-.dg-stats{display:flex;gap:18px;}
-.dg-stats .n{font-family:var(--font-num);font-weight:700;font-size:1.7rem;line-height:1;color:var(--red);}
-.dg-stats .l{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);}
-.dg-nextgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;width:92px;}
-.dg-nextgrid i{aspect-ratio:1;border-radius:3px;background:var(--paper-2);}
-.dg-queue{display:flex;flex-direction:column;gap:6px;max-height:150px;overflow-y:auto;}
-.dg-queue__item{display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--ink);line-height:1.3;}
-.dg-queue__item i{flex:0 0 auto;width:10px;height:10px;border-radius:3px;}
-.dg-legend{display:flex;flex-wrap:wrap;gap:6px 10px;}
-.dg-legend__chip{display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:.62rem;color:var(--ink-soft);}
-.dg-legend__chip i{width:10px;height:10px;border-radius:3px;display:inline-block;}
-/* 螢幕控制鈕（手機主要操作；桌機也可點）*/
-.dg-controls{display:flex;justify-content:center;gap:8px;margin-top:14px;}
-.dg-controls button{width:52px;height:52px;border:1px solid var(--line);border-radius:14px;background:var(--card);
+.dg2-stage{position:relative;width:100%;border:1.5px solid var(--red);border-radius:var(--radius-lg);
+  box-shadow:var(--soft);overflow:hidden;background:#FBF6E9;}
+.dg2-canvas{display:block;}
+.dg2-canvas canvas{display:block;width:100%;touch-action:none;}
+/* HUD 疊在畫布上 */
+.dg2-hud{position:absolute;top:10px;left:10px;right:10px;z-index:3;display:flex;align-items:center;gap:10px;pointer-events:none;}
+.dg2-hud__ava{width:44px;height:44px;object-fit:contain;background:rgba(255,253,246,.85);border-radius:12px;padding:2px;box-shadow:var(--soft-sm);}
+.dg2-hud__mission{flex:1;min-width:0;background:rgba(255,253,246,.85);border-radius:12px;padding:6px 12px;box-shadow:var(--soft-sm);}
+.dg2-hud__task{display:block;font-family:var(--font-body);font-weight:600;font-size:.82rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.dg2-hud__bar{height:6px;border-radius:6px;background:var(--paper-2);margin-top:4px;overflow:hidden;}
+.dg2-hud__bar i{display:block;height:100%;width:0%;background:var(--c-build);transition:width .25s;}
+.dg2-hud__score{background:rgba(255,253,246,.85);border-radius:12px;padding:5px 12px;text-align:center;box-shadow:var(--soft-sm);}
+.dg2-hud__score .n{font-family:var(--font-num);font-weight:700;font-size:1.3rem;color:var(--red);line-height:1;}
+.dg2-hud__score small{font-family:var(--font-mono);font-size:.54rem;letter-spacing:.06em;color:var(--ink-soft);}
+/* 上下控制鈕（畫布右側，拇指好按）*/
+.dg2-ctrl{position:absolute;right:12px;bottom:12px;z-index:3;display:flex;flex-direction:column;gap:8px;}
+.dg2-btn{width:54px;height:54px;border:1px solid var(--line);border-radius:16px;background:rgba(255,253,246,.9);
   box-shadow:var(--soft-sm);font-size:1.3rem;color:var(--ink);transition:.1s;touch-action:manipulation;}
-.dg-controls button:active{transform:translateY(2px);box-shadow:none;background:var(--paper-2);}
-.dg-controls button.hard{background:var(--red);color:#FBEFE0;border-color:transparent;}
-/* 底部投稿列 */
-.dg-inputrow{display:flex;justify-content:center;margin-top:14px;}
-.dg-inputbar{display:flex;gap:8px;width:min(620px,100%);background:var(--card);border:1px solid var(--line);
+.dg2-btn:active{transform:scale(.94);background:var(--paper-2);}
+/* 收集提示浮字 */
+.dg2-float{position:absolute;left:50%;top:26%;transform:translate(-50%,0) scale(.8);z-index:4;pointer-events:none;
+  background:var(--card);color:var(--ink);border-radius:14px;box-shadow:0 0 0 3px var(--c,#E0A92E), var(--soft);
+  padding:8px 14px;font-size:.86rem;font-weight:600;max-width:80%;text-align:center;opacity:0;transition:opacity .2s,transform .3s;}
+.dg2-float.is-show{opacity:1;transform:translate(-50%,-8px) scale(1);}
+/* 選角覆蓋 */
+.dg2-select{position:absolute;inset:0;z-index:6;display:none;background:rgba(26,22,19,.72);backdrop-filter:blur(3px);
+  padding:16px;overflow-y:auto;}
+.dg2-select.is-show{display:block;}
+.dg2-select__title{color:#F8F1E4;text-align:center;font-family:var(--font-display);font-weight:900;font-size:1.3rem;margin-bottom:12px;}
+.dg2-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;max-width:760px;margin-inline:auto;}
+.dg2-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--soft-sm);
+  padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;transition:.15s cubic-bezier(.34,1.5,.6,1);}
+.dg2-card:hover{transform:translateY(-5px);box-shadow:var(--soft);}
+.dg2-card img{width:100%;max-width:78px;height:78px;object-fit:contain;}
+.dg2-card b{font-family:var(--font-display);font-weight:900;font-size:.95rem;}
+.dg2-card span{font-family:var(--font-mono);font-size:.6rem;color:var(--ink-soft);text-align:center;line-height:1.3;}
+/* 任務完成覆蓋 */
+.dg2-done{position:absolute;inset:0;z-index:6;display:none;flex-direction:column;justify-content:center;align-items:center;gap:12px;
+  background:rgba(26,22,19,.74);backdrop-filter:blur(3px);color:#F8F1E4;text-align:center;padding:20px;}
+.dg2-done.is-show{display:flex;}
+.dg2-done h4{font-family:var(--font-display);font-weight:900;font-size:1.9rem;}
+.dg2-done p{font-family:var(--font-mono);font-size:.82rem;opacity:.88;}
+.dg2-done__btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+/* 議題池側欄 + 投稿 */
+.dg2-side{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--soft-sm);padding:14px;}
+.dg2-side h5{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px;}
+.dg2-list{display:flex;flex-wrap:wrap;gap:6px;max-height:96px;overflow-y:auto;}
+.dg2-list__chip{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:4px 10px;}
+.dg2-list__chip i{width:9px;height:9px;border-radius:3px;flex:0 0 auto;}
+.dg2-inputrow{display:flex;justify-content:center;margin-top:14px;}
+.dg2-inputbar{display:flex;gap:8px;width:min(640px,100%);background:var(--card);border:1px solid var(--line);
   padding:6px;border-radius:999px;box-shadow:var(--soft-sm);}
-.dg-inputbar input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:var(--font-body);font-size:1rem;padding:10px 16px;color:var(--ink);}
-.dg-inputbar input::placeholder{color:#A99C86;}
-.dg-inputbar button{border:none;border-radius:999px;background:var(--red);color:#FBEFE0;font-family:var(--font-body);
-  font-weight:600;font-size:.95rem;padding:10px 20px;box-shadow:0 3px 0 #4d1212;transition:.12s;white-space:nowrap;}
-.dg-inputbar button:hover{transform:translateY(-2px);box-shadow:0 5px 0 #4d1212;}
-.dg-inputbar button:active{transform:translateY(2px);box-shadow:0 1px 0 #4d1212;}
-@media (max-width:640px){
-  .dg-wrap{grid-template-columns:1fr;}
-  .dg-side{flex-direction:row;flex-wrap:wrap;gap:10px;}
-  .dg-side .dg-panel{flex:1 1 120px;}
-  .dg-queue{max-height:110px;}
+.dg2-inputbar input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:var(--font-body);font-size:1rem;padding:10px 16px;color:var(--ink);}
+.dg2-inputbar input::placeholder{color:#A99C86;}
+.dg2-inputbar button{border:none;border-radius:999px;background:var(--red);color:#FBEFE0;font-family:var(--font-body);
+  font-weight:600;font-size:.95rem;padding:10px 18px;box-shadow:0 3px 0 #4d1212;transition:.12s;white-space:nowrap;}
+.dg2-inputbar button:hover{transform:translateY(-2px);box-shadow:0 5px 0 #4d1212;}
+.dg2-inputbar button:active{transform:translateY(2px);box-shadow:0 1px 0 #4d1212;}
+@media (max-width:560px){
+  .dg2-cards{grid-template-columns:repeat(2,1fr);}
+  .dg2-hud__score small{display:none;}
+  .dg2-btn{width:48px;height:48px;}
 }
 
 /* ============================================================

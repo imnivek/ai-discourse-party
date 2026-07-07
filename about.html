@@ -19,7 +19,7 @@
    ============================================================ */
 [id]{scroll-margin-top:calc(var(--nav-h) + 16px);}
 
-/* ---------- 1. 品牌宣言 Hero ---------- */
+/* ---------- 1. 品牌宣言 Hero（sec--dark 深色舞台：黑紅白高對比） ---------- */
 .manifesto{
   position:relative;overflow:hidden;text-align:center;
   padding-block:calc(var(--nav-h) + 96px) 110px;
@@ -30,33 +30,34 @@
 .manifesto__eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:26px;}
 .manifesto__words{
   font-family:var(--font-display);font-weight:900;line-height:.98;letter-spacing:-.015em;
-  font-size:clamp(3rem,10vw,7.2rem);color:var(--ink);
+  font-size:clamp(3rem,10vw,7.2rem);color:#F8F1E4;
 }
 .manifesto__words .w{display:block;}
 .manifesto__words .w--debate{
-  color:var(--red);font-style:italic;
-  text-shadow:0 0 34px rgba(192,57,43,.28);
+  color:var(--red-bright);font-style:italic;
+  text-shadow:0 0 34px rgba(192,57,43,.45);
 }
 .manifesto__words .w--evolve{
-  -webkit-text-stroke:2px var(--ink);color:transparent;
+  -webkit-text-stroke:2px #F3EEE2;color:transparent;
 }
 .manifesto__zh{
   font-family:var(--font-display);font-weight:700;font-size:clamp(1.15rem,2.4vw,1.7rem);
-  color:var(--ink-soft);margin-top:30px;letter-spacing:.04em;
+  color:rgba(243,238,226,.78);margin-top:30px;letter-spacing:.04em;
 }
-.manifesto__zh b{color:var(--red);font-weight:900;}
+.manifesto__zh b{color:var(--red-bright);font-weight:900;}
 .manifesto__rule{
-  width:74px;height:4px;background:var(--red);margin:34px auto 0;border-radius:2px;
-  box-shadow:24px 0 0 -1px var(--c-ask), -24px 0 0 -1px var(--ink);
+  width:74px;height:4px;background:var(--red-bright);margin:34px auto 0;border-radius:2px;
+  box-shadow:24px 0 0 -1px var(--c-ask), -24px 0 0 -1px #F3EEE2;
 }
 .manifesto__meta{
   margin-top:30px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
 }
+.manifesto .badge{background:rgba(255,253,246,.12);color:#F3EEE2;border:1px solid rgba(255,255,255,.18);}
 
 /* ---------- 2. 為什麼需要 ---------- */
 .why-grid{
   display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
-  gap:52px;align-items:center;margin-top:48px;
+  gap:52px;align-items:center;margin-top:14px;
 }
 .why-list{display:flex;flex-direction:column;}
 .why-item{
@@ -100,9 +101,8 @@
 .why-svg .whub text{fill:var(--paper);font-family:'Noto Serif TC',serif;font-weight:900;font-size:16px;text-anchor:middle;}
 @keyframes hub-pulse{0%,100%{r:46;}50%{r:49;}}
 
-/* ---------- 3. 創辦人區 ---------- */
-.founders{background:var(--paper-2);border-block:1px solid var(--line);}
-.f-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:34px 0 26px;}
+/* ---------- 3. 創辦人區（底色交給 sec--tint） ---------- */
+.f-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 26px;}
 .f-btn{
   font-family:var(--font-display);font-weight:700;font-size:1.05rem;letter-spacing:.02em;
   background:var(--card);border:1px solid var(--line);border-radius:999px;padding:10px 26px;
@@ -180,7 +180,7 @@
 .city-sec .lead{max-width:56ch;}
 .city{
   --mx:50%;--my:50%;
-  position:relative;margin-top:44px;padding:26px;border:1.5px solid var(--red);
+  position:relative;margin-top:10px;padding:26px;border:1.5px solid var(--red);
   border-radius:var(--radius-lg);background:var(--card);box-shadow:var(--soft);
   background-image:
     linear-gradient(rgba(216,207,189,.5) 1px,transparent 1px),
@@ -241,12 +241,8 @@
 .city__zone:hover .city__go,.city__zone:focus-visible .city__go{opacity:1;transform:translateX(0);}
 .city__legend{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:relative;z-index:1;}
 
-/* ---------- 5. #join 報名 ---------- */
-.join-sec{
-  background:linear-gradient(180deg,#241A14 0%,#1A1310 100%);color:#F3EEE2;
-  position:relative;overflow:hidden;
-}
-.join-sec .eyebrow{color:var(--c-ask);}
+/* ---------- 5. #join 報名（底色交給 sec--dark） ---------- */
+.join-sec{position:relative;overflow:hidden;}
 .join__quote{
   font-family:var(--font-display);font-weight:900;line-height:1.35;
   font-size:clamp(1.9rem,4.6vw,3.2rem);color:#F8F1E4;max-width:22ch;
@@ -256,7 +252,7 @@
 .join__sub{color:rgba(233,225,210,.78);margin-top:16px;max-width:44ch;line-height:1.8;}
 .join__pick{
   font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--c-ask);margin:52px 0 20px;display:flex;align-items:center;gap:14px;
+  color:var(--c-ask);margin:18px 0 20px;display:flex;align-items:center;gap:14px;
 }
 .join__pick::after{content:"";flex:1;height:1px;background:rgba(233,225,210,.2);}
 .role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
@@ -333,7 +329,7 @@
 <body>
 
 <!-- ================= 1. 品牌宣言 HERO ================= -->
-<header class="manifesto" id="manifesto">
+<header class="manifesto sec--dark" id="manifesto">
   <div id="manifesto-canvas" aria-hidden="true"></div>
   <div class="container manifesto__inner">
     <span class="chip manifesto__eyebrow"><span class="chip__dot"></span><span class="mono">ABOUT · BRAND MANIFESTO</span></span>
@@ -353,10 +349,12 @@
 </header>
 
 <!-- ================= 2. 為什麼需要 AI 思辨派對 ================= -->
-<section class="section" id="why">
+<section class="section sec--paper" id="why">
   <div class="container">
-    <span class="eyebrow">WHY · 為什麼需要一場思辨派對</span>
-    <h2 class="display display--lg" style="margin-top:12px;">工具越來越多，<br><span class="underline-mark">答案卻越來越模糊</span></h2>
+    <div class="sec-head">
+      <span class="eyebrow">WHY · 為什麼需要一場思辨派對</span>
+      <h2 class="display display--lg">工具越來越多，<br><span class="underline-mark">答案卻越來越模糊</span></h2>
+    </div>
 
     <div class="why-grid">
       <div class="why-list" id="why-list">
@@ -449,11 +447,13 @@
 </section>
 
 <!-- ================= 3. 創辦人區 ================= -->
-<section class="section founders" id="founders">
+<section class="section sec--tint founders" id="founders" style="--tint:var(--c-debate)">
   <div class="container">
-    <span class="eyebrow">FOUNDERS · 創辦團隊</span>
-    <h2 class="display display--lg" style="margin-top:12px;">what's your <span class="underline-mark">discourse vibe</span> today?</h2>
-    <p class="lead" style="margin-top:14px;">四個人，四種思辨光譜。我們把自己也攤在雷達圖上——因為要求別人誠實提問之前，先誠實面對自己。</p>
+    <div class="sec-head">
+      <span class="eyebrow">FOUNDERS · 創辦團隊</span>
+      <h2 class="display display--lg">what's your <span class="underline-mark">discourse vibe</span> today?</h2>
+      <p class="lead" style="margin-top:14px;">四個人，四種思辨光譜。我們把自己也攤在雷達圖上——因為要求別人誠實提問之前，先誠實面對自己。</p>
+    </div>
 
     <div class="f-tabs" id="f-tabs" role="tablist" aria-label="切換創辦人"></div>
 
@@ -478,11 +478,13 @@
 </section>
 
 <!-- ================= 4. 世界觀：問題之城 ================= -->
-<section class="section city-sec bg-grid" id="worldview">
+<section class="section sec--tint city-sec" id="worldview" style="--tint:var(--c-build)">
   <div class="container">
-    <span class="eyebrow">WORLDVIEW · 品牌世界觀</span>
-    <h2 class="display display--lg" style="margin-top:12px;">AI 議題園，是一座<span class="underline-mark">由問題組成的城市</span></h2>
-    <p class="lead" style="margin-top:14px;">每一個沒被解決的疑問，都是一塊街區。滑過地圖點亮它們，走進任何一區，都會遇到正在拆同一題的人。</p>
+    <div class="sec-head">
+      <span class="eyebrow">WORLDVIEW · 品牌世界觀</span>
+      <h2 class="display display--lg">AI 議題園，是一座<span class="underline-mark">由問題組成的城市</span></h2>
+      <p class="lead" style="margin-top:14px;">每一個沒被解決的疑問，都是一塊街區。滑過地圖點亮它們，走進任何一區，都會遇到正在拆同一題的人。</p>
+    </div>
 
     <div class="city" id="city">
       <span class="city__compass">N ↑ · QUESTION CITY MAP v1.0</span>
@@ -548,11 +550,13 @@
 </section>
 
 <!-- ================= 5. JOIN 報名 ================= -->
-<section class="section join-sec" id="join">
+<section class="section sec--dark join-sec" id="join">
   <div class="container">
-    <span class="eyebrow">JOIN · 報名下一場</span>
-    <h2 class="join__quote" style="margin-top:14px;">帶著<span class="mk">卡關</span>進場，<br>帶著<span class="mk--red mk">思辨獸</span>離開。</h2>
-    <p class="join__sub">不需要準備簡報，不需要是專家。你只需要帶一個真實的問題——剩下的，交給現場的化學反應。</p>
+    <div class="sec-head">
+      <span class="eyebrow">JOIN · 報名下一場</span>
+      <h2 class="join__quote">帶著<span class="mk">卡關</span>進場，<br>帶著<span class="mk--red mk">思辨獸</span>離開。</h2>
+      <p class="join__sub">不需要準備簡報，不需要是專家。你只需要帶一個真實的問題——剩下的，交給現場的化學反應。</p>
+    </div>
 
     <p class="join__pick" id="join-pick-label">選你的入場身份 · PICK YOUR ENTRY PASS</p>
     <div class="role-grid" id="role-grid" role="group" aria-labelledby="join-pick-label"></div>
@@ -663,9 +667,9 @@ Brand.initChrome('about');
         var cx = W / 2, cy = H * 0.52, base = Math.min(W, H) * 0.98;
         var ctx = p.drawingContext;
 
-        // 環（極淡）
+        // 環（極淡；深色舞台上改用米白髮絲）
         ctx.save();
-        ctx.strokeStyle = 'rgba(26,22,19,0.07)';
+        ctx.strokeStyle = 'rgba(243,238,226,0.12)';
         ctx.lineWidth = 1;
         RINGS.forEach(function (ring) {
           ctx.beginPath();
@@ -692,9 +696,9 @@ Brand.initChrome('about');
           return [x + nd.ox, y + nd.oy];
         });
 
-        // 同環相鄰連線（細髮絲紅）
+        // 同環相鄰連線（細髮絲紅，深底上提亮）
         ctx.save();
-        ctx.strokeStyle = 'rgba(122,31,31,0.14)';
+        ctx.strokeStyle = 'rgba(192,57,43,0.30)';
         ctx.lineWidth = 1;
         var off = 0;
         RINGS.forEach(function (ring) {
@@ -705,7 +709,7 @@ Brand.initChrome('about');
           off += ring.n;
         });
         // 內環放射到中心
-        ctx.strokeStyle = 'rgba(122,31,31,0.10)';
+        ctx.strokeStyle = 'rgba(192,57,43,0.22)';
         for (var s = 0; s < RINGS[0].n; s++) {
           ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(pos[s][0], pos[s][1]); ctx.stroke();
         }
@@ -715,15 +719,15 @@ Brand.initChrome('about');
         for (var i2 = 0; i2 < nodes.length; i2++) {
           var nd2 = nodes[i2], pp = pos[i2];
           p.noStroke();
-          if (nd2.red) { p.fill(192, 57, 43, 200); }
-          else { p.fill(26, 22, 19, 150); }
+          if (nd2.red) { p.fill(192, 57, 43, 220); }
+          else { p.fill(243, 238, 226, 160); }
           p.circle(pp[0], pp[1], nd2.sz * 2);
         }
 
         // 中央深紅發光節點
         var pulse = REDUCED ? 0 : Math.sin(t * 42) * 2.5;
         for (var g = 5; g >= 1; g--) {
-          p.fill(122, 31, 31, 9 * g);
+          p.fill(192, 57, 43, 9 * g);
           p.circle(cx, cy, 34 + g * 13 + pulse * g * 0.5);
         }
         p.fill(122, 31, 31); p.circle(cx, cy, 22 + pulse);
@@ -957,13 +961,7 @@ Brand.initChrome('about');
             msgBox.classList.remove('is-flash');
           }, 220);
         }
-        // 把身份帶進 mailto 主旨，報名信不用重打
-        var cta = document.getElementById('join-cta');
-        if (cta) {
-          cta.href = '#join'
-            + '?subject=' + encodeURIComponent('報名｜AI 思辨派對下一場（' + r.name + '）')
-            + '&body=' + encodeURIComponent('我的入場身份：' + r.name + '\n我想帶來的卡關：');
-        }
+        // 報名 CTA 目前為 #join 佔位，之後接正式報名管道時再帶入身份
       });
       grid.appendChild(b);
     });

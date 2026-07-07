@@ -1,13 +1,11 @@
 /* ============================================================
    AI 思辨派對 — 共用行為 brand.js  →  window.Brand
-   依賴：p5.js 1.9.0（onView / 遊戲）、matter-js 0.19.0（deliberationGame）。
-   若頁面不需遊戲，可只載 p5（或都不載，其餘 API 仍可用）。
+   依賴：p5.js 1.9.0（onView / 遊戲繪製）。已移除 Matter.js。
    ============================================================ */
 (function (global) {
   'use strict';
   const Brand = {};
   const hasP5 = () => typeof global.p5 !== 'undefined';
-  const hasMatter = () => typeof global.Matter !== 'undefined';
   const isMobile = () => global.innerWidth < 720;
   const REDUCED = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -17,7 +15,6 @@
 
   /* ============================================================
      Brand.initChrome(active)  —  注入 nav + 手機漢堡面板 + footer
-     active ∈ 'home' | 'topic' | 'community' | 'about'
      ============================================================ */
   const NAV_ITEMS = [
     { key:'home', href:'index.html', label:'首頁' },
@@ -27,7 +24,6 @@
   ];
   Brand.initChrome = function (active) {
     const links = NAV_ITEMS.map(i => `<a class="nav-link" data-key="${i.key}" href="${i.href}">${i.label}</a>`).join('');
-    const panelLinks = NAV_ITEMS.map(i => `<a class="nav-link" data-key="${i.key}" href="${i.href}">${i.label}</a>`).join('');
     const chrome = `
     <header class="site-nav">
       <a class="site-nav__logo" href="index.html"><span class="site-nav__leaf">🌱</span>AI 思辨派對</a>
@@ -40,7 +36,7 @@
       </button>
     </header>
     <div class="site-nav__panel" id="siteNavPanel">
-      ${panelLinks}
+      ${links}
       <a class="nav-cta" href="about.html#join">報名下一場</a>
     </div>`;
     const footer = `
@@ -51,21 +47,15 @@
           <p class="site-footer__tag">帶著卡關進場，帶著思辨獸離開。答案不在講台上，而在每一張願意把問題拿出來的桌子上。</p>
         </div>
         <nav class="site-footer__links">
-          <a href="index.html">首頁</a>
-          <a href="topic-market.html">議題園</a>
-          <a href="community.html">採集隊</a>
-          <a href="about.html">關於</a>
-          <a href="about.html#join">報名下一場</a>
+          <a href="index.html">首頁</a><a href="topic-market.html">議題園</a>
+          <a href="community.html">採集隊</a><a href="about.html">關於</a><a href="about.html#join">報名下一場</a>
         </nav>
         <div class="site-footer__copy">© 2026 AI DISCOURSE PARTY · 思辨小花園. ALL QUESTIONS RESERVED.</div>
       </div>
     </footer>`;
     document.body.insertAdjacentHTML('afterbegin', chrome);
     document.body.insertAdjacentHTML('beforeend', footer);
-    if (active) {
-      document.querySelectorAll('.nav-link[data-key="' + active + '"]').forEach(l => l.classList.add('is-active'));
-    }
-    // 漢堡互動
+    if (active) document.querySelectorAll('.nav-link[data-key="' + active + '"]').forEach(l => l.classList.add('is-active'));
     const burger = document.querySelector('.site-nav__burger');
     const panel = document.getElementById('siteNavPanel');
     if (burger && panel) {
@@ -82,54 +72,44 @@
   };
 
   /* ============================================================
-     Brand.state  —  localStorage 共用存檔
-     key: 'discourse_garden'
+     Brand.state  —  localStorage 共用存檔（key: 'discourse_garden'）
      ============================================================ */
   const KEY = 'discourse_garden';
   Brand.state = {
     _read() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } },
     _write(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} },
-    get() { const d = this._read(); return { score: d.score || 0, unlocked: d.unlocked || [], posts: d.posts || [], crystals: d.crystals || [] }; },
+    get() { const d = this._read(); return { score: d.score || 0, lines: d.lines || 0, unlocked: d.unlocked || [], posts: d.posts || [], crystals: d.crystals || [] }; },
     addScore(n = 1) { const d = this._read(); d.score = (d.score || 0) + n; this._write(d); return d.score; },
     unlock(type) { const d = this._read(); d.unlocked = d.unlocked || []; if (!d.unlocked.includes(type)) { d.unlocked.push(type); this._write(d); } return d.unlocked; },
-    saveGarden(posts, crystals, score) { const d = this._read(); d.posts = posts; d.crystals = crystals; if (score != null) d.score = score; this._write(d); },
+    /** posts=議題池；lines 選填 */
+    saveGarden(posts, crystals, score, lines) { const d = this._read(); d.posts = posts; d.crystals = crystals; if (score != null) d.score = score; if (lines != null) d.lines = lines; this._write(d); },
     reset() { try { localStorage.removeItem(KEY); } catch (e) {} }
   };
 
   /* ============================================================
-     Brand.onView(el, sketchOrFactory)
-     el 進入視窗才 p5 loop、離開 noLoop。回傳 p5 instance。
+     Brand.onView(el, sketchOrFactory)  —  進場才 loop、離場 noLoop
      ============================================================ */
   Brand.onView = function (el, sketchOrFactory) {
     if (!hasP5()) { console.warn('[Brand.onView] p5 未載入'); return null; }
     let sketch = sketchOrFactory;
     if (typeof sketchOrFactory === 'function' && sketchOrFactory.length === 0) {
-      const r = sketchOrFactory();
-      if (typeof r === 'function') sketch = r;
+      const r = sketchOrFactory(); if (typeof r === 'function') sketch = r;
     }
     const inst = new global.p5(sketch);
-    const io = new IntersectionObserver((entries) => {
-      entries[0].isIntersecting ? inst.loop() : inst.noLoop();
-    }, { threshold: 0.02 });
+    const io = new IntersectionObserver((entries) => { entries[0].isIntersecting ? inst.loop() : inst.noLoop(); }, { threshold: 0.02 });
     io.observe(el);
     return inst;
   };
 
   /* ============================================================
-     Brand.radar(ctx2d, values5, opts)  —  五軸雷達繪製 helper
-     opts = { size, axes[], stroke, fill, dot, label, ring, rScale, showLabels }
+     Brand.radar(ctx2d, values5, opts)  —  五軸雷達 helper
      ============================================================ */
   Brand.radar = function (ctx, values, opts) {
     opts = opts || {};
-    const size = opts.size || 320;
-    const cx = size / 2, cy = size / 2, R = size * (opts.rScale || 0.30);
-    const axes = opts.axes || ['vision', 'systems', 'depth', 'action', 'community'];
-    const n = values.length;
-    const stroke = opts.stroke || '#7A1F1F';
-    const fill = opts.fill || 'rgba(122,31,31,0.14)';
-    const dot = opts.dot || '#E0A92E';
-    const label = opts.label || '#5B5348';
-    const ring = opts.ring || 'rgba(90,80,65,0.28)';
+    const size = opts.size || 320, cx = size / 2, cy = size / 2, R = size * (opts.rScale || 0.30);
+    const axes = opts.axes || ['vision', 'systems', 'depth', 'action', 'community'], n = values.length;
+    const stroke = opts.stroke || '#7A1F1F', fill = opts.fill || 'rgba(122,31,31,0.14)';
+    const dot = opts.dot || '#E0A92E', label = opts.label || '#5B5348', ring = opts.ring || 'rgba(90,80,65,0.28)';
     const pt = (i, r) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; };
     ctx.save();
     ctx.lineWidth = 1; ctx.strokeStyle = ring;
@@ -148,8 +128,6 @@
 
   /* ============================================================
      Brand.mascot(el, type)  —  注入真實去背公仔圖
-     type ∈ 'ask' | 'listen' | 'debate' | 'build' | 'connect'
-     待機動畫由 brand.css 的 .mascot img 提供（尊重 reduced-motion）
      ============================================================ */
   const MASCOT_META = {
     ask:     { color: TYPE_COLORS.ask,     name: '問問', tag: 'ASK · 提問者' },
@@ -159,20 +137,18 @@
     connect: { color: TYPE_COLORS.connect, name: '連連', tag: 'CONNECT · 連結者' }
   };
   Brand.mascotMeta = MASCOT_META;
-
   Brand.mascot = function (el, type) {
     if (!el) return;
     const m = MASCOT_META[type] || MASCOT_META.ask;
-    el.classList.add('mascot');
-    el.setAttribute('data-type', type);
+    el.classList.add('mascot'); el.setAttribute('data-type', type);
     el.innerHTML = `<img src="assets/img/mascot-${type}.png" alt="${m.name}｜${type}" loading="lazy" draggable="false">`;
     return el;
   };
 
   /* ============================================================
-     Brand.deliberationGame(mountEl, opts)  —  思辨方塊遊戲
-     opts = { categories[], defaultCat, seed[], maxBlocks, builtinCount, onScore(fn) }
-     回傳 { p5, getScore(), clear() }
+     Brand.deliberationGame(mountEl, opts)  —  格狀俄羅斯方塊（Tetris）
+     opts = { categories[], defaultCat, seed[], cols, rows, dropMs, onScore(fn), onLines(fn) }
+     回傳 { p5, getScore(), getLines(), reset() }
      ============================================================ */
   const DEFAULT_CATEGORIES = [
     { id: 'anx',  label: '焦慮與心態', color: TYPE_COLORS.debate,  re: /怕|擔心|焦慮|淘汰|取代|不安|沒用|落後|來不及|恐懼|壓力/i },
@@ -181,296 +157,224 @@
     { id: 'eth',  label: '倫理與未來', color: TYPE_COLORS.build,   re: /版權|真實|人類|未來|價值|倫理|法規|道德|隱私|信任|責任/i }
   ];
   const DEFAULT_MISC = { id: 'misc', label: '待歸類', color: TYPE_COLORS.connect };
-
-  /* 內建方塊池（取樣自各類別，可自由增修）*/
   const BUILTIN_POOL = [
-    // 焦慮與心態
     '好怕自己學不動被淘汰','AI 會不會取代我的工作','一直有種落後別人的焦慮','擔心自己變得沒有價值','來不及跟上更新速度','對未來感到不安',
-    // 工具與技術
-    'prompt 一直寫不出想要的圖','想用 chatgpt 做工作流自動化','該學哪個工具才不會白學','怎麼用 claude 幫我寫程式','midjourney 參數好難調','想串 api 做自動化','模型太多不知道選哪個','怎麼部署自己的 AI 小工具','coding 全靠 AI 會不會退化',
-    // 創意與應用
-    '沒靈感時能靠 AI 發想嗎','想做一個行銷文案產生器','用 AI 做設計會不會沒特色','想把點子變成企劃','AI 能幫我寫影片腳本嗎','怎麼做出有溫度的內容','想用 AI 經營自媒體品牌',
-    // 倫理與未來
+    'prompt 一直寫不出想要的圖','想用 chatgpt 做工作流自動化','該學哪個工具才不會白學','怎麼用 claude 幫我寫程式','midjourney 參數好難調','想串 api 做自動化','模型太多不知道選哪個','怎麼部署自己的 AI 小工具',
+    '沒靈感時能靠 AI 發想嗎','想做一個行銷文案產生器','用 AI 做設計會不會沒特色','想把點子變成企劃','AI 能幫我寫影片腳本嗎','怎麼做出有溫度的內容',
     'AI 生成的內容有版權嗎','AI 說的答案能相信嗎','未來人類還需要學畫畫嗎','誰為 AI 的錯負責','隱私資料會被拿去訓練嗎','真實與生成的界線在哪','AI 該有道德底線嗎','演算法在操控我的判斷嗎',
-    // 綜合 / 待歸類
-    '我到底該從哪裡開始','AI 讓我更懶還是更強','大家都在用我卻還沒跟上','想找人一起討論 AI','這一切會走向哪裡','如何不被資訊淹沒','AI 時代還要不要念大學','我想保留一點不被自動化的東西'
+    '我到底該從哪裡開始','AI 讓我更懶還是更強','大家都在用我卻還沒跟上','想找人一起討論 AI','這一切會走向哪裡','如何不被資訊淹沒'
   ];
-
-  /* 正規 tetromino（cell 佈局），三消以「顏色/類別」判定，形狀為視覺變化 */
-  const SHAPES = {
-    I: [[0,0],[1,0],[2,0],[3,0]],
-    O: [[0,0],[1,0],[0,1],[1,1]],
-    T: [[0,0],[1,0],[2,0],[1,1]],
-    L: [[0,0],[0,1],[0,2],[1,2]],
-    J: [[1,0],[1,1],[1,2],[0,2]],
-    S: [[1,0],[2,0],[0,1],[1,1]],
-    Z: [[0,0],[1,0],[1,1],[2,1]]
+  /* 7 種標準 tetromino（矩陣） */
+  const PIECES = {
+    I: [[1,1,1,1]], O: [[1,1],[1,1]], T: [[1,1,1],[0,1,0]],
+    S: [[0,1,1],[1,1,0]], Z: [[1,1,0],[0,1,1]], J: [[1,0,0],[1,1,1]], L: [[0,0,1],[1,1,1]]
   };
-  const TETROMINOES = ['I','O','T','L','J','S','Z'];
-  const randomShape = () => TETROMINOES[Math.floor(Math.random() * TETROMINOES.length)];
+  const PKEYS = Object.keys(PIECES);
+  const rot = (m) => { const R = m.length, C = m[0].length, o = []; for (let c = 0; c < C; c++) { o.push([]); for (let r = 0; r < R; r++) o[c][R - 1 - r] = m[r][c]; } return o; };
 
   Brand.deliberationGame = function (mountEl, opts) {
     opts = opts || {};
-    if (!hasP5() || !hasMatter()) { console.warn('[Brand.deliberationGame] 需要 p5 與 matter-js'); return null; }
+    if (!hasP5()) { console.warn('[Brand.deliberationGame] 需要 p5'); return null; }
     const CATS = opts.categories || DEFAULT_CATEGORIES;
     const DEF = opts.defaultCat || DEFAULT_MISC;
     const ALL = CATS.concat([DEF]);
-    const SEED = opts.seed || BUILTIN_POOL;
-    const MAXB = opts.maxBlocks || (isMobile() ? 40 : 70);
-    const BUILTIN_COUNT = opts.builtinCount || (isMobile() ? 18 : 36);
-    const SPAWN_INTERVAL = 120;
+    const POOL = opts.seed || BUILTIN_POOL;
+    const COLS = opts.cols || 10;
+    const ROWS = opts.rows || (isMobile() ? 16 : 18);
+    const DROP_MS = opts.dropMs || (REDUCED ? 1100 : 720);
     const catById = (id) => ALL.find(c => c.id === id) || DEF;
     const classify = (t) => { for (const c of CATS) if (c.re.test(t)) return c; return DEF; };
-    const M = global.Matter;
-    const NS = 'http://www.w3.org/2000/svg';
+    const mkItem = (t) => ({ t, c: classify(t).id });
+    const randItem = () => mkItem(POOL[Math.floor(Math.random() * POOL.length)]);
 
-    // ---- 注入 DOM（HUD/圖例/清空在專屬頂列；輸入在專屬底列，皆高於 canvas）----
+    // ---- 注入 DOM ----
     mountEl.classList.add('dg');
     mountEl.innerHTML = `
-      <div class="dg-stage">
-        <div class="dg-topbar">
-          <span class="dg-band-label">✦ 星空檔案庫 · 思想結晶漂浮區</span>
-          <div class="dg-hud">
-            <div class="dg-legend"></div>
-            <button class="dg-clear" type="button">🧹 清空</button>
+      <div class="dg-wrap">
+        <div class="dg-board-col">
+          <div class="dg-current"></div>
+          <div class="dg-canvas"></div>
+          <div class="dg-overlay">
+            <h4>堆到頂了！</h4><p>分數與已投入議題會保留</p>
+            <button class="btn btn--primary dg-again" type="button">再玩一次 ↻</button>
           </div>
         </div>
-        <div class="dg-canvas"></div>
-        <div class="dg-tip"></div>
-        <div class="dg-mindmap"></div>
-        <div class="dg-inputrow">
-          <form class="dg-inputbar" autocomplete="off">
-            <input type="text" maxlength="40" placeholder="把你的 AI 卡關丟進來…">
-            <button type="submit">種下去 🌱</button>
-          </form>
-        </div>
+        <aside class="dg-side">
+          <div class="dg-panel"><div class="dg-stats">
+            <div><div class="n dg-score">0</div><div class="l">SCORE 採集</div></div>
+            <div><div class="n dg-lines">0</div><div class="l">LINES 消行</div></div>
+          </div></div>
+          <div class="dg-panel"><h5>NEXT 下一個</h5><div class="dg-nextgrid"></div></div>
+          <div class="dg-panel"><h5>議題池 QUEUE</h5><div class="dg-queue"></div></div>
+          <div class="dg-panel"><h5>類別</h5><div class="dg-legend"></div></div>
+        </aside>
+      </div>
+      <div class="dg-controls">
+        <button type="button" data-a="l" aria-label="左移">◀</button>
+        <button type="button" data-a="rot" aria-label="旋轉">⟳</button>
+        <button type="button" data-a="r" aria-label="右移">▶</button>
+        <button type="button" data-a="soft" aria-label="軟降">▼</button>
+        <button type="button" data-a="hard" class="hard" aria-label="硬降">⤓</button>
+      </div>
+      <div class="dg-inputrow">
+        <form class="dg-inputbar" autocomplete="off">
+          <input type="text" maxlength="40" placeholder="把你的 AI 卡關丟進來…">
+          <button type="submit">投進議題池 🌱</button>
+        </form>
       </div>`;
-    const stageEl = mountEl.querySelector('.dg-stage');
-    const topbarEl = mountEl.querySelector('.dg-topbar');
+    const boardColEl = mountEl.querySelector('.dg-board-col');
     const canvasHost = mountEl.querySelector('.dg-canvas');
-    const tipEl = mountEl.querySelector('.dg-tip');
-    const mmEl = mountEl.querySelector('.dg-mindmap');
+    const currentEl = mountEl.querySelector('.dg-current');
+    const overlayEl = mountEl.querySelector('.dg-overlay');
+    const scoreEl = mountEl.querySelector('.dg-score');
+    const linesEl = mountEl.querySelector('.dg-lines');
+    const nextGridEl = mountEl.querySelector('.dg-nextgrid');
+    const queueEl = mountEl.querySelector('.dg-queue');
     const legendEl = mountEl.querySelector('.dg-legend');
-    const inputRowEl = mountEl.querySelector('.dg-inputrow');
     const formEl = mountEl.querySelector('.dg-inputbar');
     const inputEl = mountEl.querySelector('.dg-inputbar input');
-    const clearBtn = mountEl.querySelector('.dg-clear');
+    const againBtn = mountEl.querySelector('.dg-again');
     CATS.forEach(c => { const el = document.createElement('span'); el.className = 'dg-legend__chip'; el.innerHTML = `<i style="background:${c.color}"></i>${c.label}`; legendEl.appendChild(el); });
+    for (let i = 0; i < 16; i++) nextGridEl.appendChild(document.createElement('i'));
 
-    let score = Brand.state.get().score || 0;
+    // ---- 遊戲狀態（deliberationGame 閉包，供 sketch 與 DOM 共用）----
+    const st = Brand.state.get();
+    let queue = (st.posts && st.posts.length) ? st.posts.slice() : shuffle(POOL.slice()).map(mkItem);
+    let score = st.score || 0, lines = st.lines || 0;
+    let grid, cur, nextP, gameOver = false, saveTimer = null, inView = true;
 
+    function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+    function newGrid() { grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null)); }
+    function takeItem() { const it = queue.length ? queue.shift() : randItem(); return it; }
+    function makePiece() { const it = takeItem(); const key = PKEYS[Math.floor(Math.random() * PKEYS.length)]; return { mat: PIECES[key].map(r => r.slice()), cat: catById(it.c), item: it }; }
+    function spawn() {
+      cur = nextP || makePiece(); nextP = makePiece();
+      cur.x = Math.floor((COLS - cur.mat[0].length) / 2); cur.y = 0;
+      if (collide(cur.mat, cur.x, cur.y)) { gameOver = true; overlayEl.classList.add('is-show'); }
+      renderNext(); renderQueue(); renderCurrent(); scheduleSave();
+    }
+    function collide(m, x, y) {
+      for (let r = 0; r < m.length; r++) for (let c = 0; c < m[r].length; c++) {
+        if (!m[r][c]) continue;
+        const nr = y + r, nc = x + c;
+        if (nc < 0 || nc >= COLS || nr >= ROWS) return true;
+        if (nr >= 0 && grid[nr][nc]) return true;
+      }
+      return false;
+    }
+
+    // ---- DOM render ----
+    function renderStats() { scoreEl.textContent = score; linesEl.textContent = lines; }
+    function renderCurrent() { if (!cur) return; currentEl.innerHTML = `正在落下：<b>${esc(cur.item.t)}</b>　·　${cur.cat.label}`; }
+    function renderNext() {
+      const cells = nextGridEl.children; for (let i = 0; i < 16; i++) cells[i].style.background = '';
+      if (!nextP) return; const m = nextP.mat, or = Math.floor((4 - m.length) / 2), oc = Math.floor((4 - m[0].length) / 2);
+      for (let r = 0; r < m.length; r++) for (let c = 0; c < m[r].length; c++) if (m[r][c]) cells[(or + r) * 4 + (oc + c)].style.background = nextP.cat.color;
+    }
+    function renderQueue() {
+      queueEl.innerHTML = '';
+      const list = queue.slice(0, 6);
+      if (!list.length) { queueEl.innerHTML = '<div class="dg-queue__item" style="color:var(--ink-soft)">（接下來為隨機思辨句）</div>'; return; }
+      list.forEach(it => { const cat = catById(it.c); const d = document.createElement('div'); d.className = 'dg-queue__item'; d.innerHTML = `<i style="background:${cat.color}"></i>${esc(it.t)}`; queueEl.appendChild(d); });
+    }
+    function esc(s) { return String(s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m])); }
+    function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(() => Brand.state.saveGarden(queue, [], score, lines), 350); }
+
+    // ---- p5 sketch（盤面繪製 + 重力）----
+    let api = {};
     const sketch = (p) => {
-      let engine, world, mouse, mc, W, H, CELL, BAND, playBottom;
-      let walls = [], crystals = [], sparks = [], orderSeq = 0, frameC = 0, saveTimer = null;
-      const getBlocks = () => M.Composite.allBodies(world).filter(b => b.plugin && b.plugin.isBlock);
-      const inputH = () => (inputRowEl && inputRowEl.offsetHeight) || (isMobile() ? 58 : 64);
-      const field = () => ({ left: 14, right: W - 14, bottom: playBottom, top: BAND });
-
-      function computeBounds() { BAND = Math.round(H * 0.24); playBottom = H - inputH(); }
-      function buildWalls() {
-        walls.forEach(w => M.Composite.remove(world, w)); walls = [];
-        const o = { isStatic: true, restitution: 0.1, friction: 0.6 };
-        walls.push(M.Bodies.rectangle(W / 2, playBottom + 30, W * 1.5, 60, o)); // 地板：輸入列上緣之上
-        walls.push(M.Bodies.rectangle(-30, H / 2, 60, H * 2, o));
-        walls.push(M.Bodies.rectangle(W + 30, H / 2, 60, H * 2, o));
-        M.Composite.add(world, walls);
+      let cs, boardW, boardH, acc = 0, sparks = [];
+      function compute() {
+        const availW = boardColEl.clientWidth;
+        const availH = global.innerHeight * (isMobile() ? 0.5 : 0.6);
+        cs = Math.max(14, Math.floor(Math.min(availW / COLS, availH / ROWS)));
+        boardW = cs * COLS; boardH = cs * ROWS;
       }
-
       p.setup = () => {
-        W = stageEl.clientWidth; H = stageEl.clientHeight;
-        CELL = isMobile() ? 17 : 24; computeBounds();
-        const c = p.createCanvas(W, H); c.parent(canvasHost);
-        p.pixelDensity(1);
-        p.textFont('Instrument Sans'); p.textAlign(p.CENTER, p.CENTER); p.rectMode(p.CENTER);
-        engine = M.Engine.create(); world = engine.world; engine.gravity.y = REDUCED ? 0.35 : 1;
-        buildWalls();
-        mouse = M.Mouse.create(c.elt); mouse.pixelRatio = 1;
-        mc = M.MouseConstraint.create(engine, { mouse, constraint: { stiffness: 0.18, render: { visible: false } } });
-        M.Composite.add(world, mc);
-        setupTouch(c.elt);
-        restoreState();
+        compute(); const c = p.createCanvas(boardW, boardH); c.parent(canvasHost);
+        p.pixelDensity(Math.min(global.devicePixelRatio || 1, 1.5));
+        p.textFont('Instrument Sans'); p.textAlign(p.CENTER, p.CENTER);
+        newGrid(); nextP = makePiece(); spawn(); renderStats();
+        bindTouch(c.elt);
+        const io = new IntersectionObserver(e => { inView = e[0].isIntersecting; }, { threshold: 0.15 });
+        io.observe(boardColEl);
       };
-
-      /* 觸控：放行頁面捲動，只有起點在方塊上才攔截拖曳 */
-      function setupTouch(el) {
-        try {
-          el.removeEventListener('wheel', mouse.mousewheel);
-          el.removeEventListener('mousewheel', mouse.mousewheel);
-          el.removeEventListener('DOMMouseScroll', mouse.mousewheel);
-        } catch (e) {}
-        try {
-          el.removeEventListener('touchstart', mouse.mousedown);
-          el.removeEventListener('touchmove', mouse.mousemove);
-          el.removeEventListener('touchend', mouse.mouseup);
-        } catch (e) {}
-        let dragging = false;
-        el.addEventListener('touchstart', (e) => {
-          const r = el.getBoundingClientRect(), t = e.touches[0];
-          const x = t.clientX - r.left, y = t.clientY - r.top;
-          if (M.Query.point(getBlocks(), { x, y }).length) { dragging = true; mouse.mousedown(e); }
-          else dragging = false;
-        }, { passive: false });
-        el.addEventListener('touchmove', (e) => { if (dragging) mouse.mousemove(e); }, { passive: false });
-        el.addEventListener('touchend', (e) => { if (dragging) mouse.mouseup(e); dragging = false; }, { passive: false });
-      }
-
       p.draw = () => {
-        M.Engine.update(engine, 1000 / 60);
-        p.clear();
-        drawGround(); drawBlocks(); drawBand(); updateCrystals(); drawSparks();
-        frameC++; if (frameC % 7 === 0) detectMatches();
-        handleHover();
+        p.clear(); p.background('#FBF6E9');
+        drawGridLines(); drawSettled(); drawGhost(); drawPiece(); drawSparks();
+        if (!gameOver) { acc += p.deltaTime; if (acc >= DROP_MS) { acc = 0; step(); } }
       };
-
-      function drawGround() {
-        p.noStroke(); p.fill('#E4D3A8'); p.rectMode(p.CORNER); p.rect(0, playBottom - 12, W, 12); p.rectMode(p.CENTER);
-        p.stroke('#8FAF63'); p.strokeWeight(2);
-        for (let x = 12; x < W; x += 34) { p.line(x, playBottom - 12, x - 4, playBottom - 20); p.line(x, playBottom - 12, x, playBottom - 23); p.line(x, playBottom - 12, x + 4, playBottom - 20); }
-        p.noStroke();
+      function px(c) { return c * cs; }
+      function drawGridLines() { p.stroke(216, 207, 189, 90); p.strokeWeight(1); for (let c = 1; c < COLS; c++) p.line(px(c), 0, px(c), boardH); for (let r = 1; r < ROWS; r++) p.line(0, px(r), boardW, px(r)); }
+      function block(c, r, col, a) { p.noStroke(); const cc = p.color(col); if (a != null) cc.setAlpha(a); p.fill(cc); p.rect(px(c) + 1, px(r) + 1, cs - 2, cs - 2, Math.max(3, cs * 0.18)); p.fill(255, 255, 255, (a != null ? a * 0.22 : 45)); p.rect(px(c) + cs * 0.18, px(r) + cs * 0.16, cs * 0.4, cs * 0.28, 3); }
+      function drawSettled() { for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (grid[r][c]) block(c, r, grid[r][c]); }
+      function drawPiece() {
+        if (!cur) return; const m = cur.mat;
+        for (let r = 0; r < m.length; r++) for (let c = 0; c < m[r].length; c++) if (m[r][c] && cur.y + r >= 0) block(cur.x + c, cur.y + r, cur.cat.color);
+        // 方塊小標籤（類別）
+        p.noStroke(); p.fill(cur.cat.color === TYPE_COLORS.ask ? '#1A1613' : '#FFFDF6');
+        p.textSize(Math.max(9, cs * 0.42)); p.textStyle(p.BOLD);
+        const cxp = (cur.x + m[0].length / 2) * cs, cyp = (cur.y + m.length / 2) * cs;
+        if (cur.y >= 0) p.text(cur.cat.label.slice(0, 2), cxp, cyp);
       }
-      function cell(x, y, ang, col) {
-        p.push(); p.translate(x, y); p.rotate(ang);
-        p.fill(col); p.noStroke(); p.rect(0, 0, CELL * 0.98, CELL * 0.98, 6);
-        p.fill(255, 255, 255, 50); p.rect(-CELL * 0.16, -CELL * 0.18, CELL * 0.42, CELL * 0.3, 4);
-        p.pop();
+      function drawGhost() {
+        if (!cur) return; let gy = cur.y; while (!collide(cur.mat, cur.x, gy + 1)) gy++;
+        const m = cur.mat; p.noFill(); p.stroke(26, 22, 19, 60); p.strokeWeight(1.5);
+        for (let r = 0; r < m.length; r++) for (let c = 0; c < m[r].length; c++) if (m[r][c] && gy + r >= 0) p.rect(px(cur.x + c) + 2, px(gy + r) + 2, cs - 4, cs - 4, cs * 0.16);
       }
-      function drawBlocks() {
-        for (const b of getBlocks()) {
-          const col = b.plugin.cat.color;
-          for (let i = 1; i < b.parts.length; i++) { const pt = b.parts[i]; cell(pt.position.x, pt.position.y, pt.angle, col); }
-          p.push(); p.translate(b.position.x, b.position.y); p.rotate(b.angle);
-          const t = b.plugin.text; const disp = t.length > 6 ? t.slice(0, 6) + '…' : t;
-          p.textSize(CELL * 0.42); p.textStyle(p.BOLD);
-          p.fill(col === TYPE_COLORS.ask ? '#1A1613' : '#FFFDF6'); p.text(disp, 0, 0); p.pop();
+      function drawSparks() { for (let i = sparks.length - 1; i >= 0; i--) { const s = sparks[i]; s.x += s.vx; s.y += s.vy; s.vy += 0.15; s.life -= 0.035; p.noStroke(); const cc = p.color(s.c); cc.setAlpha(255 * Math.max(0, s.life)); p.fill(cc); p.push(); p.translate(s.x, s.y); p.rotate(s.life * 6); p.rect(0, 0, s.sz, s.sz, 2); p.pop(); if (s.life <= 0) sparks.splice(i, 1); } }
+      function spark(row, colr) { if (REDUCED) return; for (let c = 0; c < COLS; c++) for (let k = 0; k < 2; k++) { const a = Math.random() * Math.PI * 2, sp = 1 + Math.random() * 4; sparks.push({ x: px(c) + cs / 2, y: px(row) + cs / 2, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 1, life: 1, c: colr, sz: 3 + Math.random() * 5 }); } }
+      // ---- 邏輯 ----
+      function lockPiece() {
+        const m = cur.mat; let topped = false;
+        for (let r = 0; r < m.length; r++) for (let c = 0; c < m[r].length; c++) if (m[r][c]) { const nr = cur.y + r, nc = cur.x + c; if (nr < 0) topped = true; else grid[nr][nc] = cur.cat.color; }
+        clearLines();
+        if (topped) { gameOver = true; overlayEl.classList.add('is-show'); return; }
+        spawn();
+      }
+      function clearLines() {
+        let cleared = 0;
+        for (let r = ROWS - 1; r >= 0; r--) {
+          if (grid[r].every(x => x)) { spark(r, grid[r][0] || TYPE_COLORS.ask); grid.splice(r, 1); grid.unshift(Array(COLS).fill(null)); cleared++; r++; }
         }
+        if (cleared > 0) { lines += cleared; score = Brand.state.addScore(cleared); renderStats(); if (opts.onScore) opts.onScore(score); if (opts.onLines) opts.onLines(lines); scheduleSave(); }
       }
-      function drawBand() {
-        p.noStroke(); p.fill(26, 22, 19, 14); p.rectMode(p.CORNER); p.rect(0, 0, W, BAND); p.rectMode(p.CENTER);
-        p.stroke(122, 31, 31, 55); p.strokeWeight(1); p.drawingContext.setLineDash([5, 6]);
-        p.line(0, BAND, W, BAND); p.drawingContext.setLineDash([]); p.noStroke();
+      function step() { if (!collide(cur.mat, cur.x, cur.y + 1)) cur.y++; else lockPiece(); }
+      // 對外操作
+      api.move = (d) => { if (gameOver || !cur) return; if (!collide(cur.mat, cur.x + d, cur.y)) cur.x += d; };
+      api.rotate = () => { if (gameOver || !cur) return; const nm = rot(cur.mat); for (const k of [0, -1, 1, -2, 2]) if (!collide(nm, cur.x + k, cur.y)) { cur.mat = nm; cur.x += k; return; } };
+      api.soft = () => { if (gameOver || !cur) return; acc = 0; step(); };
+      api.hard = () => { if (gameOver || !cur) return; while (!collide(cur.mat, cur.x, cur.y + 1)) cur.y++; lockPiece(); };
+      api.reset = () => { newGrid(); sparks = []; gameOver = false; overlayEl.classList.remove('is-show'); nextP = makePiece(); spawn(); };
+      p.windowResized = () => { compute(); p.resizeCanvas(boardW, boardH); };
+      // ---- 觸控：滑動移動 / 點擊旋轉 / 下滑硬降 ----
+      function bindTouch(el) {
+        let sx = 0, sy = 0, lx = 0, moved = false;
+        el.addEventListener('touchstart', (e) => { const t = e.touches[0]; sx = lx = t.clientX; sy = t.clientY; moved = false; }, { passive: true });
+        el.addEventListener('touchmove', (e) => { const t = e.touches[0]; const dx = t.clientX - lx; if (Math.abs(dx) > cs) { api.move(dx > 0 ? 1 : -1); lx = t.clientX; moved = true; e.preventDefault(); } }, { passive: false });
+        el.addEventListener('touchend', (e) => { const t = e.changedTouches[0]; const dx = t.clientX - sx, dy = t.clientY - sy; if (!moved) { if (dy > 46 && dy > Math.abs(dx)) api.hard(); else api.rotate(); } else if (dy > 60 && dy > Math.abs(dx)) api.hard(); }, { passive: true });
       }
-      function spawnCrystal(x, y, cat, texts, settled) {
-        const r = isMobile() ? 15 : 19; const slotY = 30 + Math.random() * (BAND - 46);
-        crystals.push({ x: settled ? (30 + Math.random() * (W - 60)) : x, y: settled ? slotY : y, tx: 30 + Math.random() * (W - 60), ty: slotY, cat, texts, r, phase: Math.random() * p.TWO_PI, settled: !!settled, _drawY: settled ? slotY : y });
-      }
-      function updateCrystals() {
-        for (const c of crystals) {
-          c.phase += 0.05;
-          if (!c.settled) { c.x = p.lerp(c.x, c.tx, 0.06); c.y = p.lerp(c.y, c.ty, 0.06); if (Math.abs(c.x - c.tx) < 1 && Math.abs(c.y - c.ty) < 1) c.settled = true; }
-          const yy = c.y + (c.settled ? Math.sin(c.phase) * 3 : 0);
-          p.noStroke();
-          for (let i = 3; i >= 1; i--) { const gc = p.color(c.cat.color); gc.setAlpha(26); p.fill(gc); p.circle(c.x, yy, c.r * 2 + i * 7); }
-          p.fill(c.cat.color); p.circle(c.x, yy, c.r * 2);
-          p.fill(255, 255, 255, 210); p.circle(c.x - c.r * 0.3, yy - c.r * 0.3, c.r * 0.5);
-          p.fill('#FFFDF6'); p.textSize(c.r * 1.1); p.text('✦', c.x, yy + 1);
-          c._drawY = yy;
-        }
-      }
-      function sparkBurst(x, y, color) { if (REDUCED) return; for (let i = 0; i < 20; i++) { const a = p.random(p.TWO_PI), s = p.random(2, 7); sparks.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 1, c: color, sz: p.random(4, 9) }); } }
-      function drawSparks() {
-        for (let i = sparks.length - 1; i >= 0; i--) { const s = sparks[i]; s.x += s.vx; s.y += s.vy; s.vy += 0.12; s.life -= 0.03;
-          p.noStroke(); const c = p.color(s.c); c.setAlpha(255 * Math.max(0, s.life)); p.fill(c);
-          p.push(); p.translate(s.x, s.y); p.rotate(s.life * 6); p.rect(0, 0, s.sz, s.sz, 2); p.pop();
-          if (s.life <= 0) sparks.splice(i, 1); }
-      }
-      function detectMatches() {
-        const blocks = getBlocks(); if (blocks.length < 3) return;
-        const parent = {}; const find = a => parent[a] === a ? a : (parent[a] = find(parent[a]));
-        blocks.forEach(b => parent[b.id] = b.id);
-        for (const pair of engine.pairs.list) {
-          if (!pair.isActive) continue;
-          const A = pair.bodyA.parent, B = pair.bodyB.parent;
-          if (A === B) continue;
-          if (!(A.plugin && A.plugin.isBlock) || !(B.plugin && B.plugin.isBlock)) continue;
-          if (A.plugin.cat.id !== B.plugin.cat.id) continue;
-          if (parent[A.id] === undefined || parent[B.id] === undefined) continue;
-          parent[find(A.id)] = find(B.id);
-        }
-        const groups = {}; blocks.forEach(b => { const r = find(b.id); (groups[r] = groups[r] || []).push(b); });
-        for (const k in groups) { const g = groups[k]; if (g.length >= 3) { mergeThree(g.slice(0, 3)); return; } }
-      }
-      function mergeThree(three) {
-        const cat = three[0].plugin.cat; let cx = 0, cy = 0; const texts = [];
-        three.forEach(b => { cx += b.position.x; cy += b.position.y; texts.push(b.plugin.text); });
-        cx /= 3; cy /= 3; sparkBurst(cx, cy, cat.color);
-        three.forEach(b => M.Composite.remove(world, b));
-        spawnCrystal(cx, cy, cat, texts, false);
-        score++; Brand.state.addScore(1); if (opts.onScore) opts.onScore(score); scheduleSave();
-      }
-      function handleHover() {
-        const hits = M.Query.point(getBlocks(), { x: p.mouseX, y: p.mouseY });
-        if (hits.length && p.mouseX > 0 && p.mouseX < W && p.mouseY > 0 && p.mouseY < H) {
-          const b = hits[0].parent && hits[0].parent.plugin ? hits[0].parent : hits[0];
-          tipEl.textContent = b.plugin.text;
-          tipEl.style.left = Math.min(W - 160, p.mouseX + 12) + 'px';
-          tipEl.style.top = Math.max(4, p.mouseY - 10) + 'px';
-          tipEl.classList.add('is-show');
-        } else tipEl.classList.remove('is-show');
-      }
-      p.mousePressed = () => {
-        if (p.mouseX < 0 || p.mouseX > W || p.mouseY < 0 || p.mouseY > H) return;
-        for (const c of crystals) { const yy = c._drawY || c.y; if (p.dist(p.mouseX, p.mouseY, c.x, yy) < c.r + 8) { openMindmap(c); return; } }
-      };
-      function addBlock(text, cat, o) {
-        o = o || {}; const blocks = getBlocks();
-        if (blocks.length >= MAXB) { let old = blocks[0]; blocks.forEach(b => { if (b.plugin.order < old.plugin.order) old = b; }); M.Composite.remove(world, old); }
-        const cells = SHAPES[o.shape] || SHAPES[randomShape()];
-        const f = field();
-        const sx = o.x !== undefined ? o.x : p.random(f.left + 40, f.right - 40);
-        const sy = o.y !== undefined ? o.y : (REDUCED ? f.bottom - 150 - Math.random() * 120 : -30 - Math.random() * 90);
-        const parts = cells.map(cc => M.Bodies.rectangle(sx + cc[0] * CELL, sy + cc[1] * CELL, CELL * 0.94, CELL * 0.94, { chamfer: { radius: 6 } }));
-        const body = M.Body.create({ parts, friction: 0.55, frictionStatic: 0.8, restitution: REDUCED ? 0 : 0.14, frictionAir: 0.02 });
-        body.plugin = { isBlock: true, cat, text, order: orderSeq++ };
-        M.Composite.add(world, body); return body;
-      }
-      function scheduleSave() { clearTimeout(saveTimer); saveTimer = setTimeout(save, 400); }
-      function save() { const posts = getBlocks().map(b => ({ t: b.plugin.text, c: b.plugin.cat.id })); const cr = crystals.map(c => ({ c: c.cat.id, t: c.texts })); Brand.state.saveGarden(posts, cr, score); }
-      function seedBuiltins() {
-        const pool = SEED.slice();
-        for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp; }
-        const count = Math.min(BUILTIN_COUNT, pool.length);
-        for (let i = 0; i < count; i++) { const t = pool[i]; setTimeout(() => addBlock(t, classify(t)), REDUCED ? 0 : i * SPAWN_INTERVAL); }
-      }
-      function restoreState() {
-        const d = Brand.state.get();
-        if ((!d.posts || !d.posts.length) && (!d.crystals || !d.crystals.length)) { seedBuiltins(); scheduleSave(); return; }
-        (d.posts || []).forEach((pp, i) => setTimeout(() => addBlock(pp.t, catById(pp.c)), REDUCED ? 0 : i * 90));
-        (d.crystals || []).forEach(cc => spawnCrystal(0, 0, catById(cc.c), cc.t, true));
-      }
-      function openMindmap(cr) {
-        mmEl.innerHTML = ''; mmEl.classList.add('is-open');
-        const cw = mmEl.clientWidth, ch = mmEl.clientHeight, cx = cw / 2, cy = ch / 2;
-        const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'dg-mm__svg'); svg.setAttribute('width', cw); svg.setAttribute('height', ch); mmEl.appendChild(svg);
-        const center = document.createElement('div'); center.className = 'dg-mm__center'; center.style.setProperty('--c', cr.cat.color); center.style.left = cx + 'px'; center.style.top = cy + 'px';
-        center.innerHTML = `<span class="dg-mm__center-emo">🌱</span><b>${cr.cat.label}</b><small>思想結晶 · ${cr.texts.length} 則投稿</small>`; mmEl.appendChild(center);
-        const n = cr.texts.length, R = Math.min(cw, ch) * 0.33;
-        cr.texts.forEach((t, i) => {
-          const a = -Math.PI / 2 + i * 2 * Math.PI / n, nx = cx + Math.cos(a) * R, ny = cy + Math.sin(a) * R;
-          const line = document.createElementNS(NS, 'line'); line.setAttribute('x1', cx); line.setAttribute('y1', cy); line.setAttribute('x2', nx); line.setAttribute('y2', ny);
-          line.setAttribute('class', 'dg-mm__line'); line.style.stroke = cr.cat.color; line.style.color = cr.cat.color;
-          const len = Math.hypot(nx - cx, ny - cy); line.style.strokeDasharray = len; line.style.strokeDashoffset = REDUCED ? 0 : len; svg.appendChild(line);
-          const bub = document.createElement('div'); bub.className = 'dg-mm__bubble'; bub.textContent = t; bub.style.setProperty('--c', cr.cat.color); bub.style.left = nx + 'px'; bub.style.top = ny + 'px'; mmEl.appendChild(bub);
-          if (REDUCED) bub.style.transform = 'translate(-50%,-50%) scale(1)';
-          else requestAnimationFrame(() => requestAnimationFrame(() => { line.style.strokeDashoffset = 0; bub.style.transform = 'translate(-50%,-50%) scale(1)'; }));
-        });
-        const hint = document.createElement('div'); hint.className = 'dg-mm__hint'; hint.textContent = '點空白處收合 ✕'; mmEl.appendChild(hint);
-        mmEl.onclick = (e) => { if (e.target === mmEl || e.target === hint) { mmEl.classList.remove('is-open'); mmEl.innerHTML = ''; } };
-      }
-      p.windowResized = () => {
-        W = stageEl.clientWidth; H = stageEl.clientHeight; CELL = isMobile() ? 17 : 24;
-        computeBounds(); p.resizeCanvas(W, H); buildWalls();
-      };
-      p._api = {
-        submit: (text) => { addBlock(text, classify(text)); scheduleSave(); },
-        clear: () => { getBlocks().forEach(b => M.Composite.remove(world, b)); crystals = []; sparks = []; score = 0; Brand.state.saveGarden([], [], 0); if (opts.onScore) opts.onScore(0); seedBuiltins(); scheduleSave(); }
-      };
     };
 
-    const inst = Brand.onView(stageEl, () => sketch);
-    formEl.addEventListener('submit', (e) => { e.preventDefault(); const v = inputEl.value.trim(); if (!v) return; if (inst._api) inst._api.submit(v); inputEl.value = ''; inputEl.placeholder = '再種一個卡關 🌱'; });
-    clearBtn.addEventListener('click', () => { if (confirm('確定清空你的思辨牆？（會重新種一批內建方塊）') && inst._api) inst._api.clear(); });
+    const inst = Brand.onView(boardColEl, () => sketch);
 
-    return { p5: inst, getScore: () => score, clear: () => inst._api && inst._api.clear() };
+    // ---- DOM 控制：鍵盤 / 按鈕 / 投稿 / 再玩 ----
+    function act(a) { if (a === 'l') api.move && api.move(-1); else if (a === 'r') api.move && api.move(1); else if (a === 'rot') api.rotate && api.rotate(); else if (a === 'soft') api.soft && api.soft(); else if (a === 'hard') api.hard && api.hard(); }
+    mountEl.querySelectorAll('.dg-controls button').forEach(b => b.addEventListener('click', () => act(b.dataset.a)));
+    global.addEventListener('keydown', (e) => {
+      if (!inView || gameOver) return;
+      if (document.activeElement === inputEl) return;
+      const K = { ArrowLeft: 'l', ArrowRight: 'r', ArrowUp: 'rot', ArrowDown: 'soft', ' ': 'hard' };
+      if (K[e.key]) { e.preventDefault(); act(K[e.key]); }
+    });
+    formEl.addEventListener('submit', (e) => {
+      e.preventDefault(); const v = inputEl.value.trim(); if (!v) return;
+      queue.push(mkItem(v)); renderQueue(); scheduleSave();
+      inputEl.value = ''; inputEl.placeholder = '已投進議題池，接下來會落下 🌱';
+    });
+    againBtn.addEventListener('click', () => { if (api.reset) api.reset(); });
+
+    return { p5: inst, getScore: () => score, getLines: () => lines, reset: () => api.reset && api.reset() };
   };
 
   global.Brand = Brand;

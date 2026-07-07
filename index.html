@@ -12,7 +12,6 @@
 <link rel="stylesheet" href="assets/brand.css">
 
 <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
 
 <style>
 /* index 頁面特有樣式（骨架排版；元件皆用 brand.css） */
@@ -27,26 +26,26 @@
 .hero__aside{display:flex;flex-direction:column;gap:16px;align-items:flex-start;}
 @media (max-width:860px){.hero__grid{grid-template-columns:1fr;gap:26px;}.hero__aside{flex-direction:row;flex-wrap:wrap;align-items:center;}}
 
-.sec-head{max-width:52ch;margin-bottom:14px;}
-.sec-head .eyebrow{display:block;margin-bottom:12px;}
-
 .game-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:22px;}
 
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:44px;}
 @media (max-width:860px){.grid-3{grid-template-columns:1fr;}}
 
-/* 便利貼牆 */
-.wall{position:relative;height:330vh;background:linear-gradient(180deg,#2A231C 0%, #1E1813 100%);}
-.wall__sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center;}
+/* 便利貼牆：穩健橫向捲動（overflow-x + scroll-snap） */
+.wall{position:relative;overflow:hidden;}
 #wall-canvas{position:absolute;inset:0;z-index:0;}
-.wall__sticky>*:not(#wall-canvas){position:relative;z-index:1;}
-.wall__head{width:min(1200px,100%);margin-inline:auto;padding:calc(var(--nav-h) + 10px) 24px 6px;}
-.wall__head .display{color:#F3EEE2;}
-.wall__head .eyebrow{color:var(--c-ask);display:block;margin-bottom:10px;}
-.wall__track{display:flex;align-items:center;gap:36px;padding:44px 24px 24px;width:max-content;will-change:transform;}
-.wall .note{width:min(310px,74vw);min-height:290px;flex-shrink:0;}
-.wall__arrow{flex-shrink:0;font-family:var(--font-display);color:#F3EEE2;font-size:2.2rem;opacity:.45;}
-.wall__progress{width:min(1200px,calc(100% - 48px));margin:0 auto 22px;}
+#wall-canvas canvas{display:block;}
+.wall .container,.wall__viewport{position:relative;z-index:1;}
+.wall__viewport{display:flex;align-items:center;gap:8px;max-width:min(1280px,100%);margin-inline:auto;padding:0 12px 6px;}
+.wall__scroller{flex:1;min-width:0;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;outline:none;}
+.wall__scroller::-webkit-scrollbar{height:8px;}
+.wall__scroller::-webkit-scrollbar-thumb{background:rgba(243,238,226,.28);border-radius:8px;}
+.wall__track{display:flex;gap:24px;width:max-content;padding:26px 14px 30px;}
+.wall .note{scroll-snap-align:center;flex:0 0 min(300px,78vw);min-height:270px;}
+.wall__btn{flex:0 0 auto;width:46px;height:46px;border-radius:50%;border:1px solid rgba(243,238,226,.3);
+  background:rgba(255,255,255,.08);color:#F3EEE2;font-size:1.1rem;display:grid;place-items:center;transition:.15s;}
+.wall__btn:hover{background:rgba(255,255,255,.2);transform:translateY(-2px);}
+@media (max-width:640px){.wall__btn{display:none;}}
 
 /* 型態雷達 */
 .type-grid{margin-top:44px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;align-items:start;}
@@ -103,29 +102,29 @@
     </div>
     <aside class="hero__aside">
       <div class="hud"><span class="hud__icon">🌿</span><div><div class="hud__num" id="live-count">128</div><div class="hud__label">正在思辨中</div></div></div>
-      <div class="hud"><span class="hud__icon">💎</span><div><div class="hud__num" id="hero-score">0</div><div class="hud__label">花園結晶數</div></div></div>
+      <div class="hud"><span class="hud__icon">💎</span><div><div class="hud__num" id="hero-score">0</div><div class="hud__label">採集分數</div></div></div>
       <span class="chip"><span class="chip__dot"></span>AI DISCOURSE PARTY</span>
     </aside>
   </div>
 </header>
 
 <!-- ======= 招牌互動：思辨方塊 ======= -->
-<section class="section" id="game">
+<section class="section sec--paper" id="game">
   <div class="container">
     <div class="game-head">
       <div class="sec-head">
         <span class="eyebrow">PLAY · 共創遊戲</span>
         <h2 class="display display--lg">思辨方塊 <span class="underline-mark">Deliberation Blocks</span></h2>
-        <p class="lead" style="margin-top:8px;">把 AI 卡關丟進花園 → 變成方塊落下 → 三塊同色碰在一起會迸出「思想結晶」→ 點結晶展開，看見前人的思辨軌跡。可拖曳整理，你的花園會被記住。</p>
+        <p class="lead" style="margin-top:8px;">把 AI 卡關丟進議題池 → 帶著你的句子的方塊落下 → 排滿一列就「消行歸納」，換得採集分數。桌機 ←→ 移動、↑ 旋轉、↓ 軟降、Space 硬降；手機用下方按鈕或左右滑動。你的分數與議題會被記住。</p>
       </div>
-      <div class="stat"><span class="stat__num num" id="score-num">0</span><span class="stat__label">Concept Nodes 結晶數</span></div>
+      <div class="stat"><span class="stat__num num" id="score-num">0</span><span class="stat__label">Discourse Score 採集分數</span></div>
     </div>
     <div id="game-mount"></div>
   </div>
 </section>
 
 <!-- ======= 思・辨・行 三卡 ======= -->
-<section class="section" style="background:var(--paper-2);">
+<section class="section sec--tint" style="--tint:var(--c-ask);">
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">01 — WHY WE PARTY</span>
@@ -140,30 +139,31 @@
 </section>
 
 <!-- ======= 派對怎麼玩：橫向便利貼牆 ======= -->
-<section class="wall" id="wall">
-  <div class="wall__sticky">
-    <div id="wall-canvas"></div>
-    <div class="wall__head">
+<section class="section sec--dark wall" id="wall">
+  <div id="wall-canvas"></div>
+  <div class="container">
+    <div class="sec-head">
       <span class="eyebrow">02 — HOW IT WORKS</span>
       <h2 class="display display--lg">沒有老師、沒有標準答案，<br>只有正在發生的問題。</h2>
     </div>
-    <div class="wall__track" id="wall-track">
-      <article class="note" style="--note-bg:var(--c-ask);--note-rot:-3deg;"><span class="pin"></span><span class="note__step">STEP 1</span><h3 class="note__title">帶著問題來</h3><p class="note__desc">不需要準備簡報，不需要是專家。一個卡住你的問題，就是最好的入場券。</p></article>
-      <span class="wall__arrow">→</span>
-      <article class="note" style="--note-bg:var(--c-listen);--note-rot:2deg;color:#F3EEE2;"><span class="pin"></span><span class="note__step">STEP 2</span><h3 class="note__title">貼上議題牆</h3><p class="note__desc">把問題寫在便利貼上，貼上牆。你會發現：原來卡住你的，也卡住了別人。</p></article>
-      <span class="wall__arrow">→</span>
-      <article class="note" style="--note-bg:var(--c-build);--note-rot:-1.5deg;"><span class="pin"></span><span class="note__step">STEP 3</span><h3 class="note__title">找到同題夥伴</h3><p class="note__desc">用腳投票，走向你最有感的議題桌。Open Space 法則：走到哪，哪裡就是對的地方。</p></article>
-      <span class="wall__arrow">→</span>
-      <article class="note" style="--note-bg:var(--c-debate);--note-rot:2.5deg;color:#F3EEE2;"><span class="pin"></span><span class="note__step">STEP 4</span><h3 class="note__title">開始深聊碰撞</h3><p class="note__desc">沒有主持人壟斷發言。經驗、質疑、反例輪流上桌，讓觀點互相校正。</p></article>
-      <span class="wall__arrow">→</span>
-      <article class="note" style="--note-bg:var(--c-connect);--note-rot:-2deg;color:#F3EEE2;"><span class="pin"></span><span class="note__step">STEP 5</span><h3 class="note__title">帶走行動方向</h3><p class="note__desc">散場前寫下你的下一步：要試的工具、要找的人、要驗證的想法。派對結束，行動開始。</p></article>
+  </div>
+  <div class="wall__viewport">
+    <button class="wall__btn" id="wall-prev" type="button" aria-label="上一張">◀</button>
+    <div class="wall__scroller" id="wall-scroller" tabindex="0" aria-label="步驟橫向捲動，可左右鍵或拖曳">
+      <div class="wall__track">
+        <article class="note" style="--note-bg:var(--c-ask);--note-rot:-3deg;"><span class="pin"></span><span class="note__step">STEP 1</span><h3 class="note__title">帶著問題來</h3><p class="note__desc">不需要準備簡報，不需要是專家。一個卡住你的問題，就是最好的入場券。</p></article>
+        <article class="note" style="--note-bg:var(--c-listen);--note-rot:2deg;color:#F3EEE2;"><span class="pin"></span><span class="note__step">STEP 2</span><h3 class="note__title">貼上議題牆</h3><p class="note__desc">把問題寫在便利貼上，貼上牆。你會發現：原來卡住你的，也卡住了別人。</p></article>
+        <article class="note" style="--note-bg:var(--c-build);--note-rot:-1.5deg;"><span class="pin"></span><span class="note__step">STEP 3</span><h3 class="note__title">找到同題夥伴</h3><p class="note__desc">用腳投票，走向你最有感的議題桌。Open Space 法則：走到哪，哪裡就是對的地方。</p></article>
+        <article class="note" style="--note-bg:var(--c-debate);--note-rot:2.5deg;color:#F3EEE2;"><span class="pin"></span><span class="note__step">STEP 4</span><h3 class="note__title">開始深聊碰撞</h3><p class="note__desc">沒有主持人壟斷發言。經驗、質疑、反例輪流上桌，讓觀點互相校正。</p></article>
+        <article class="note" style="--note-bg:var(--c-connect);--note-rot:-2deg;color:#F3EEE2;"><span class="pin"></span><span class="note__step">STEP 5</span><h3 class="note__title">帶走行動方向</h3><p class="note__desc">散場前寫下你的下一步：要試的工具、要找的人、要驗證的想法。派對結束，行動開始。</p></article>
+      </div>
     </div>
-    <div class="progress wall__progress"><div class="progress__bar" id="wall-progress"></div></div>
+    <button class="wall__btn" id="wall-next" type="button" aria-label="下一張">▶</button>
   </div>
 </section>
 
 <!-- ======= 你是哪一種思辨者：型態雷達 ======= -->
-<section class="section" id="types">
+<section class="section sec--tint" style="--tint:var(--c-listen);" id="types">
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">03 — WHICH DISCOURSE TYPE</span>
@@ -188,7 +188,7 @@
 </section>
 
 <!-- ======= 採集隊 teaser ======= -->
-<section class="section" style="background:var(--paper-2);text-align:center;">
+<section class="section sec--tint" style="--tint:var(--c-build);text-align:center;">
   <div class="container">
     <span class="eyebrow">04 — MEET THE CREW</span>
     <h2 class="display display--lg" style="margin-top:12px;">思辨獸採集隊，<span class="underline-mark">已經在花園裡了</span>。</h2>
@@ -199,7 +199,7 @@
 </section>
 
 <!-- ======= 創辦人 teaser ======= -->
-<section class="section" id="founders">
+<section class="section sec--paper" id="founders">
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">05 — WHO PLANTED THIS</span>
@@ -211,7 +211,7 @@
 </section>
 
 <!-- ======= Join CTA ======= -->
-<section class="section join section--dark" id="join">
+<section class="section join sec--dark" id="join">
   <div class="marquee marquee--top"><span id="mq-top"></span></div>
   <div class="marquee marquee--bottom"><span id="mq-bottom"></span></div>
   <div id="join-canvas"></div>
@@ -263,28 +263,36 @@ Brand.deliberationGame(document.getElementById('game-mount'), {
 });
 document.getElementById('score-num').textContent = Brand.state.get().score;
 
-/* ---- 便利貼牆：議題星圖 + scroll 橫向 ---- */
-const wallInst = Brand.onView(document.getElementById('wall'), () => (p) => {
-  let W,H,nodes=[],scrollX=0,SPAN;
-  p.setup=()=>{ const st=document.querySelector('.wall__sticky'); W=st.offsetWidth;H=st.offsetHeight;SPAN=W*1.4;
+/* ---- 便利貼牆：議題星圖（環境漂移背景）---- */
+Brand.onView(document.getElementById('wall'), () => (p) => {
+  let W,H,host,nodes=[],SPAN,off=0;
+  p.setup=()=>{ host=document.getElementById('wall'); W=host.offsetWidth;H=host.offsetHeight;SPAN=W*1.4;
     const c=p.createCanvas(W,H); c.parent('wall-canvas'); p.pixelDensity(Math.min(window.devicePixelRatio||1,1.5));
-    const n=isMobile()?28:54; for(let i=0;i<n;i++) nodes.push({x:p.random(SPAN),y:p.random(H),r:p.random(1.5,3.2),tw:p.random(p.TWO_PI)}); };
-  const wrapX=(x)=>{ let v=(x-scrollX*0.25)%SPAN; if(v<0)v+=SPAN; return v; };
-  p.draw=()=>{ p.clear(); for(const nd of nodes) nd.tw+=0.03; p.strokeWeight(1);
+    const n=isMobile()?26:50; for(let i=0;i<n;i++) nodes.push({x:p.random(SPAN),y:p.random(H),r:p.random(1.5,3.2),tw:p.random(p.TWO_PI)}); };
+  const wrapX=(x)=>{ let v=(x-off)%SPAN; if(v<0)v+=SPAN; return v; };
+  p.draw=()=>{ p.clear(); off+=REDUCED?0.06:0.25; for(const nd of nodes) nd.tw+=0.03; p.strokeWeight(1);
     for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){ const a=nodes[i],b=nodes[j]; const ax=wrapX(a.x),bx=wrapX(b.x),d=p.dist(ax,a.y,bx,b.y);
-      if(d<88){ p.stroke(224,169,46, 30*(1-d/88)); p.line(ax,a.y,bx,b.y);} }
-    p.noStroke(); for(const nd of nodes){ const x=wrapX(nd.x),a=110+Math.sin(nd.tw)*80; p.fill(192,57,43,a*0.5); p.circle(x,nd.y,nd.r*2.4); p.fill(243,238,226,a); p.circle(x,nd.y,nd.r); } };
-  p._setScroll=(v)=>{ scrollX=v; };
-  p.windowResized=()=>{ const st=document.querySelector('.wall__sticky'); W=st.offsetWidth;H=st.offsetHeight;SPAN=W*1.4; p.resizeCanvas(W,H); };
+      if(d<88){ p.stroke(224,169,46, 26*(1-d/88)); p.line(ax,a.y,bx,b.y);} }
+    p.noStroke(); for(const nd of nodes){ const x=wrapX(nd.x),a=100+Math.sin(nd.tw)*70; p.fill(192,57,43,a*0.5); p.circle(x,nd.y,nd.r*2.4); p.fill(243,238,226,a); p.circle(x,nd.y,nd.r); } };
+  p.windowResized=()=>{ W=host.offsetWidth;H=host.offsetHeight;SPAN=W*1.4; p.resizeCanvas(W,H); };
 });
+/* ---- 便利貼牆：穩健橫向捲動控制（箭頭 / 拖曳 / Shift+滾輪 / 鍵盤）---- */
 (() => {
-  const wall=document.getElementById('wall'), track=document.getElementById('wall-track'), bar=document.getElementById('wall-progress');
-  let ticking=false;
-  const update=()=>{ ticking=false; const rect=wall.getBoundingClientRect(); const total=wall.offsetHeight-window.innerHeight; if(total<=0)return;
-    const prog=Math.min(1,Math.max(0,-rect.top/total)); const maxX=Math.max(0,track.scrollWidth-window.innerWidth+48);
-    if(!REDUCED) track.style.transform=`translateX(${-prog*maxX}px)`; bar.style.width=(prog*100)+'%'; if(wallInst&&wallInst._setScroll) wallInst._setScroll(prog*maxX); };
-  const onScroll=()=>{ if(!ticking){ticking=true;requestAnimationFrame(update);} };
-  window.addEventListener('scroll',onScroll,{passive:true}); window.addEventListener('resize',onScroll); update();
+  const scroller=document.getElementById('wall-scroller');
+  const prev=document.getElementById('wall-prev'), next=document.getElementById('wall-next');
+  const step=()=>{ const n=scroller.querySelector('.note'); return (n?n.offsetWidth:300)+24; };
+  prev.addEventListener('click',()=>scroller.scrollBy({left:-step(),behavior:'smooth'}));
+  next.addEventListener('click',()=>scroller.scrollBy({left:step(),behavior:'smooth'}));
+  scroller.addEventListener('keydown',(e)=>{ if(e.key==='ArrowLeft'){scroller.scrollBy({left:-step(),behavior:'smooth'});e.preventDefault();}
+    else if(e.key==='ArrowRight'){scroller.scrollBy({left:step(),behavior:'smooth'});e.preventDefault();} });
+  // Shift+滾輪 → 橫向（一般垂直滾輪照常捲頁）
+  scroller.addEventListener('wheel',(e)=>{ if(e.shiftKey && e.deltaY){ scroller.scrollLeft+=e.deltaY; e.preventDefault(); } },{passive:false});
+  // 桌機滑鼠拖曳捲動
+  let down=false,startX=0,startL=0;
+  scroller.addEventListener('pointerdown',(e)=>{ if(e.pointerType!=='mouse')return; down=true;startX=e.clientX;startL=scroller.scrollLeft;scroller.style.scrollSnapType='none'; try{scroller.setPointerCapture(e.pointerId);}catch(_){} });
+  scroller.addEventListener('pointermove',(e)=>{ if(!down)return; scroller.scrollLeft=startL-(e.clientX-startX); });
+  const end=()=>{ if(!down)return; down=false; scroller.style.scrollSnapType=''; };
+  scroller.addEventListener('pointerup',end); scroller.addEventListener('pointercancel',end); scroller.addEventListener('pointerleave',end);
 })();
 
 /* ---- 型態雷達（5 主型態 + 拖曳，用 Brand.radar helper）---- */

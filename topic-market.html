@@ -12,7 +12,6 @@
 <link rel="stylesheet" href="assets/brand.css">
 
 <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
 
 <style>
 /* ============================================================
@@ -28,9 +27,6 @@
 .t-hero__aside{display:flex;flex-direction:column;gap:14px;align-items:flex-start;}
 .t-hero__seedline{margin-top:26px;display:flex;gap:10px;flex-wrap:wrap;}
 @media (max-width:860px){.t-hero__inner{grid-template-columns:1fr;gap:24px;}.t-hero__aside{flex-direction:row;flex-wrap:wrap;align-items:center;}}
-
-.sec-head{max-width:56ch;margin-bottom:16px;}
-.sec-head .eyebrow{display:block;margin-bottom:12px;}
 
 /* ---- 花園七區 ---- */
 .garden-stage{
@@ -97,11 +93,7 @@
 .tm-game-mascots .mascot{width:74px;height:90px;}
 @media (max-width:560px){.tm-game-mascots .mascot{width:58px;height:70px;}}
 
-/* ---- 議題星圖（深色區）---- */
-.starfield{background:linear-gradient(180deg,#241D16 0%,#1B1511 100%);color:#F3EEE2;overflow:hidden;}
-.starfield .display{color:#F8F1E4;}
-.starfield .eyebrow{color:var(--c-ask);}
-.starfield .lead{color:rgba(233,225,210,.78);}
+/* ---- 議題星圖（深色區：底色改吃 brand.css .sec--dark 統一深色舞台）---- */
 .star-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:26px;margin-top:36px;align-items:stretch;}
 .star-stage{
   position:relative;min-height:500px;border:1px solid rgba(233,225,210,.18);border-radius:var(--radius-lg);
@@ -213,7 +205,7 @@
 </header>
 
 <!-- ======= 01 花園七區 ======= -->
-<section class="section" id="garden">
+<section class="section sec--paper" id="garden">
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">01 — SEVEN GARDEN ZONES</span>
@@ -242,7 +234,7 @@
 </section>
 
 <!-- ======= 02 思辨方塊投稿 ======= -->
-<section class="section" id="pool" style="background:var(--paper-2);">
+<section class="section sec--tint" id="pool" style="--tint:var(--c-build);">
   <div class="container">
     <div class="tm-game-head">
       <div class="sec-head" style="margin-bottom:0;">
@@ -260,7 +252,7 @@
 </section>
 
 <!-- ======= 03 議題星圖 ======= -->
-<section class="section starfield" id="starmap">
+<section class="section sec--dark" id="starmap">
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">03 — TOPIC CONSTELLATION</span>
@@ -290,7 +282,7 @@
 </section>
 
 <!-- ======= 04 熱門議題卡 ======= -->
-<section class="section" id="hot">
+<section class="section sec--paper" id="hot">
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">04 — HOT TOPICS DETECTED</span>
@@ -382,7 +374,7 @@
 </section>
 
 <!-- ======= CTA ======= -->
-<section class="section tm-cta" style="background:var(--paper-2);">
+<section class="section sec--tint tm-cta" style="--tint:var(--c-debate);">
   <div class="container">
     <span class="eyebrow">BRING IT TO THE TABLE</span>
     <p class="tm-cta__quote">園子裡的種子夠多了，<br>缺的是<span class="mk">你坐下來的那張椅子</span>。</p>

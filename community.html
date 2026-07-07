@@ -19,8 +19,7 @@
    ============================================================ */
 :root{ --c-deep:#274B63; } /* 圖鑑第五型態：深潛藍黑（僅本頁使用） */
 
-.sec-head{max-width:56ch;margin-bottom:14px;}
-.sec-head .eyebrow{display:block;margin-bottom:12px;}
+/* .sec-head 沿用 brand.css 統一版本，本頁僅補 lead 間距 */
 .sec-head .lead{margin-top:10px;}
 
 /* ---------- HERO ---------- */
@@ -88,8 +87,7 @@
 .quest-done:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(26,22,19,.35);}
 .quest-done:disabled{background:var(--paper-2);color:var(--ink-soft);box-shadow:none;cursor:default;transform:none;border:1px dashed var(--line);}
 
-/* ---------- 思辨獸型態圖鑑 Dex ---------- */
-.dex{background:var(--paper-2);}
+/* ---------- 思辨獸型態圖鑑 Dex（底色由 .sec--tint 統一供應） ---------- */
 .dex-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px;}
 .dex-card{
   --tc:var(--red);background:var(--card);border:1px solid var(--line);border-top:6px solid var(--tc);
@@ -125,8 +123,10 @@
 .people-grid .mission-card__en{font-size:.72rem;margin:8px 0 10px;}
 .people-grid .mission-card__desc{font-size:.92rem;}
 
-/* ---------- 社群守則便利貼 ---------- */
-.rules{background:var(--paper-2);overflow:hidden;}
+/* ---------- 社群守則便利貼（深色舞台由 .sec--dark 統一供應） ---------- */
+.rules{overflow:hidden;}
+.rules.sec--dark .note__title{color:inherit;} /* 便利貼標題跟隨貼紙自身文字色，避免深色區白字壓過淺色貼紙 */
+.rules.sec--dark .rules__hint{color:rgba(248,241,228,.68);}
 .rules-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:24px;margin-top:60px;}
 .rules .note{min-height:230px;transform:translate(var(--dx,0px),var(--dy,0px)) rotate(var(--note-rot));}
 .rules .note:hover{animation:none;box-shadow:0 14px 30px rgba(40,30,20,.22);}
@@ -196,7 +196,7 @@
 </header>
 
 <!-- ======= 五隻採集隊角色 ======= -->
-<section class="section" id="crew">
+<section class="section sec--paper" id="crew">
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">FORAGER CREW · 五隻採集獸</span>
@@ -300,7 +300,7 @@
 </section>
 
 <!-- ======= 思辨獸型態圖鑑 Discourse Dex ======= -->
-<section class="section dex" id="dex">
+<section class="section sec--tint" id="dex" style="--tint:var(--c-connect)">
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">DISCOURSE DEX · 型態圖鑑</span>
@@ -420,7 +420,7 @@
 </section>
 
 <!-- ======= 你會遇到誰 ======= -->
-<section class="section" id="people">
+<section class="section sec--paper" id="people">
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">WHO YOU'LL MEET · 同桌的人</span>
@@ -469,7 +469,7 @@
 </section>
 
 <!-- ======= 社群守則（入場貼紙）======= -->
-<section class="section rules" id="rules">
+<section class="section sec--dark rules" id="rules">
   <div class="container">
     <div class="sec-head">
       <span class="eyebrow">HOUSE RULES · 入場貼紙</span>
@@ -508,7 +508,7 @@
 </section>
 
 <!-- ======= 品牌金句 ======= -->
-<section class="section quote-sec">
+<section class="section sec--tint quote-sec" style="--tint:var(--c-build)">
   <div class="container">
     <blockquote class="quote-card">
       「每一次思辨，都讓你的角色長出新的形狀。」

@@ -31,8 +31,9 @@
 .hero__title{margin:14px 0 20px;}
 .hero__actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px;}
 .hero__aside{display:flex;flex-direction:column;gap:16px;align-items:flex-start;}
+.hero__group{width:100%;max-width:460px;height:auto;display:block;filter:drop-shadow(0 16px 26px rgba(40,30,20,.16));}
 .hero__parade{display:flex;flex-wrap:wrap;gap:2px;}
-.hero__parade .mascot{width:62px;height:76px;}
+.hero__parade .mascot{width:52px;height:64px;}
 
 /* ---------- 採集隊角色卡 ---------- */
 .crew-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-top:44px;align-items:start;}
@@ -186,6 +187,7 @@
     <aside class="hero__aside">
       <div class="hud"><span class="hud__icon">🍃</span><div><div class="hud__num" id="hud-score">0</div><div class="hud__label">採集分數</div></div></div>
       <div class="hud"><span class="hud__icon">🔓</span><div><div class="hud__num" id="hud-unlock">0 / 5</div><div class="hud__label">已解鎖型態</div></div></div>
+      <img class="hero__group" src="assets/img/mascots-group.png" alt="議題採集隊五隻思辨獸群像" loading="lazy" draggable="false">
       <div class="hero__parade" aria-hidden="true">
         <span data-mascot="ask"></span><span data-mascot="listen"></span><span data-mascot="debate"></span><span data-mascot="build"></span><span data-mascot="connect"></span>
       </div>

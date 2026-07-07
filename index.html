@@ -16,7 +16,9 @@
 
 <style>
 /* index 頁面特有樣式（骨架排版；元件皆用 brand.css） */
-.hero{position:relative;padding-block:calc(var(--nav-h) + 70px) 80px;overflow:hidden;}
+.hero{position:relative;padding-block:calc(var(--nav-h) + 70px) 80px;overflow:hidden;
+  background-image:linear-gradient(rgba(243,238,226,.74), rgba(243,238,226,.9)), url('assets/img/bg-hero.jpg');
+  background-size:cover;background-position:center;}
 #hero-canvas{position:absolute;inset:0;z-index:0;}
 #hero-canvas canvas{display:block;}
 .hero__grid{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;align-items:center;}
@@ -71,7 +73,7 @@
 @media (max-width:860px){.founders-teaser{grid-template-columns:repeat(2,1fr);}}
 
 /* Join CTA */
-.join{background:linear-gradient(180deg,#241A14 0%, #1A1310 100%);color:#F3EEE2;text-align:center;position:relative;overflow:hidden;}
+.join{text-align:center;position:relative;overflow:hidden;}
 #join-canvas{position:absolute;inset:0;z-index:0;}
 .join__inner{position:relative;z-index:2;max-width:760px;margin-inline:auto;}
 .join .display{color:#F8F1E4;}
@@ -87,7 +89,7 @@
 <body>
 
 <!-- ======= HERO ======= -->
-<header class="hero bg-grid">
+<header class="hero">
   <div id="hero-canvas"></div>
   <div class="container hero__grid">
     <div>
@@ -209,7 +211,7 @@
 </section>
 
 <!-- ======= Join CTA ======= -->
-<section class="section join" id="join">
+<section class="section join section--dark" id="join">
   <div class="marquee marquee--top"><span id="mq-top"></span></div>
   <div class="marquee marquee--bottom"><span id="mq-bottom"></span></div>
   <div id="join-canvas"></div>

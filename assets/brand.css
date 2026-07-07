@@ -38,13 +38,21 @@
 html{scroll-behavior:smooth;}
 body{
   font-family:var(--font-body);
-  background:var(--paper);
   color:var(--ink);
   line-height:1.7;
   font-weight:400;
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
+  /* 全站底：暖奶油紙 + 極淡金泡泡星座背景（加米色遮罩確保對比）*/
+  background-color:var(--paper);
+  background-image:linear-gradient(rgba(243,238,226,.88), rgba(243,238,226,.90)), url('img/bg-main.jpg');
+  background-size:cover;
+  background-position:center;
+  background-attachment:fixed;
+  background-repeat:no-repeat;
 }
+html{overflow-x:hidden;}
+@media (max-width:640px){ body{background-attachment:scroll;} }
 /* 極淡紙張噪點疊層 */
 body::before{
   content:"";position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.05;
@@ -65,6 +73,18 @@ img{max-width:100%;display:block;}
   background-position:center;
 }
 .bg-grid > *{position:relative;z-index:1;}
+
+/* 深色區塊（CTA / 報名 / 舞台）：bg-dark.jpg + 暗色遮罩，白字 */
+.section--dark{
+  color:#F3EEE2;
+  background-color:#171310;
+  background-image:linear-gradient(rgba(20,15,12,.80), rgba(20,15,12,.88)), url('img/bg-dark.jpg');
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+}
+.section--dark .display,.section--dark .note__title{color:#F8F1E4;}
+.section--dark .lead{color:rgba(248,241,228,.82);}
+.section--dark .eyebrow{color:var(--c-ask);}
+.section--dark .chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.16);color:#F3EEE2;}
 
 /* ============================================================
    排版
@@ -205,9 +225,33 @@ img{max-width:100%;display:block;}
   padding:9px 18px;border-radius:12px;box-shadow:0 4px 0 #4d1212;transition:.13s;}
 .nav-cta:hover{transform:translateY(-2px);box-shadow:0 6px 0 #4d1212;background:var(--red-bright);}
 .nav-cta:active{transform:translateY(2px);box-shadow:0 2px 0 #4d1212;}
-@media (max-width:860px){.site-nav__links .nav-link{display:none;}}
 
-.site-footer{background:var(--ink);color:#E9E1D2;padding:52px 24px 40px;}
+/* 漢堡（≤640 顯示）*/
+.site-nav__burger{display:none;flex-direction:column;justify-content:center;align-items:center;gap:5px;
+  width:44px;height:44px;background:none;border:none;padding:0;}
+.site-nav__burger span{display:block;width:24px;height:2.6px;border-radius:2px;background:var(--ink);transition:transform .25s,opacity .2s;}
+.site-nav__burger.is-open span:nth-child(1){transform:translateY(7.6px) rotate(45deg);}
+.site-nav__burger.is-open span:nth-child(2){opacity:0;}
+.site-nav__burger.is-open span:nth-child(3){transform:translateY(-7.6px) rotate(-45deg);}
+.site-nav__panel{position:fixed;left:0;right:0;top:var(--nav-h);bottom:0;z-index:999;
+  background:rgba(243,238,226,.98);backdrop-filter:blur(8px);display:flex;flex-direction:column;padding:22px;gap:4px;
+  transform:translateY(-8px);opacity:0;pointer-events:none;transition:transform .26s ease,opacity .26s ease;}
+.site-nav__panel.is-open{transform:translateY(0);opacity:1;pointer-events:auto;}
+.site-nav__panel .nav-link{min-height:52px;display:flex;align-items:center;font-size:1.15rem;padding:12px 10px;border-bottom:1px solid var(--line);border-radius:0;}
+.site-nav__panel .nav-link.is-active{box-shadow:inset 4px 0 0 var(--red);padding-left:16px;}
+.site-nav__panel .nav-cta{margin-top:18px;justify-content:center;border-radius:14px;min-height:52px;display:flex;align-items:center;font-size:1.05rem;}
+
+@media (max-width:860px){.site-nav__links .nav-link{display:none;}}
+@media (max-width:640px){
+  .site-nav__links{display:none;}
+  .site-nav__burger{display:flex;}
+}
+@media (min-width:641px){ .site-nav__panel{display:none;} }
+
+.site-footer{position:relative;background:var(--ink);color:#E9E1D2;padding:64px 24px 40px;}
+/* 頂端裝飾橫條 */
+.site-footer::before{content:"";position:absolute;top:0;left:0;right:0;height:44px;
+  background:url('img/deco-footer.png') repeat-x center bottom / auto 100%;opacity:.92;pointer-events:none;}
 .site-footer__inner{width:min(1200px,100%);margin-inline:auto;display:flex;justify-content:space-between;
   align-items:flex-start;gap:28px;flex-wrap:wrap;}
 .site-footer__brand{font-family:var(--font-display);font-weight:900;font-size:1.4rem;display:flex;align-items:center;gap:10px;}
@@ -233,12 +277,15 @@ img{max-width:100%;display:block;}
 /* ============================================================
    吉祥物 mascot（Brand.mascot 注入 SVG）
    ============================================================ */
-.mascot{display:inline-block;width:120px;height:144px;}
-.mascot svg{width:100%;height:100%;overflow:visible;}
-.mascot[data-type] .mascot-body{animation:mascot-bob 3.2s ease-in-out infinite;transform-origin:50% 90%;}
-.mascot[data-type] .mascot-feature{animation:mascot-sway 4s ease-in-out infinite;transform-origin:50% 60%;}
-@keyframes mascot-bob{0%,100%{transform:translateY(0) scale(1,1);}50%{transform:translateY(-4px) scale(1.01,.99);}}
-@keyframes mascot-sway{0%,100%{transform:rotate(-3deg);}50%{transform:rotate(3deg);}}
+.mascot{display:inline-block;width:120px;height:144px;background:transparent;}
+.mascot img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 8px 10px rgba(40,30,20,.18));
+  animation:mascot-bob 3.4s ease-in-out infinite;transform-origin:50% 88%;will-change:transform;}
+/* 五型待機節奏微錯開，群像更有生命感 */
+.mascot[data-type="listen"] img{animation-duration:3.8s;}
+.mascot[data-type="debate"] img{animation-duration:3.0s;}
+.mascot[data-type="build"] img{animation-duration:4.0s;}
+.mascot[data-type="connect"] img{animation-duration:3.6s;}
+@keyframes mascot-bob{0%,100%{transform:translateY(0) rotate(-1.6deg);}50%{transform:translateY(-6px) rotate(1.6deg);}}
 .mascot-chip{display:flex;flex-direction:column;align-items:center;gap:6px;}
 .mascot-chip__name{font-family:var(--font-display);font-weight:700;font-size:1rem;}
 .mascot-chip__tag{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.06em;color:var(--ink-soft);}
@@ -261,22 +308,29 @@ img{max-width:100%;display:block;}
   box-shadow:var(--soft), inset 0 1px 0 rgba(255,255,255,.5);
 }
 .dg-canvas{position:absolute;inset:0;z-index:1;}
-.dg-canvas canvas{display:block;border-radius:var(--radius-lg);}
-.dg-band-label{position:absolute;top:10px;left:14px;z-index:2;font-family:var(--font-mono);font-size:.68rem;
-  letter-spacing:.06em;color:var(--red);background:rgba(255,253,246,.8);padding:4px 11px;border-radius:8px;pointer-events:none;}
-.dg-hud{position:absolute;top:10px;right:12px;z-index:3;display:flex;gap:8px;align-items:center;}
-.dg-legend{display:flex;gap:7px;background:rgba(255,253,246,.85);border:1px solid var(--line);padding:6px 10px;border-radius:12px;}
+.dg-canvas canvas{display:block;border-radius:var(--radius-lg);touch-action:pan-y;}
+/* 專屬頂列：band 標籤 + HUD（永遠在方塊之上）*/
+.dg-topbar{position:absolute;top:0;left:0;right:0;z-index:4;display:flex;justify-content:space-between;
+  align-items:flex-start;gap:8px;padding:10px 12px;pointer-events:none;}
+.dg-topbar > *{pointer-events:auto;}
+.dg-band-label{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.06em;color:var(--red);
+  background:rgba(255,253,246,.85);padding:4px 11px;border-radius:8px;}
+.dg-hud{display:flex;gap:8px;align-items:flex-start;}
+.dg-legend{display:flex;gap:7px;background:rgba(255,253,246,.9);border:1px solid var(--line);padding:6px 10px;border-radius:12px;}
 .dg-legend__chip{display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:.64rem;color:var(--ink-soft);}
 .dg-legend__chip i{width:11px;height:11px;border-radius:3px;display:inline-block;}
 .dg-clear{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 11px;
-  font-family:var(--font-body);font-weight:500;font-size:.72rem;color:var(--ink-soft);transition:.13s;}
+  font-family:var(--font-body);font-weight:500;font-size:.72rem;color:var(--ink-soft);transition:.13s;white-space:nowrap;}
 .dg-clear:hover{color:var(--red);transform:translateY(-1px);box-shadow:var(--soft-sm);}
-.dg-inputbar{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:4;display:flex;gap:8px;
-  width:min(560px,92%);background:var(--card);border:1px solid var(--line);padding:7px;border-radius:999px;box-shadow:var(--soft);}
-.dg-inputbar input{flex:1;border:none;outline:none;background:transparent;font-family:var(--font-body);font-size:1rem;padding:9px 16px;color:var(--ink);}
+/* 專屬底列：實心紙底，方塊只堆在其上緣之上、永不遮住輸入框 */
+.dg-inputrow{position:absolute;left:0;right:0;bottom:0;z-index:5;display:flex;justify-content:center;
+  padding:8px 12px;background:var(--card);border-top:1.5px solid var(--red);box-shadow:0 -4px 12px rgba(40,30,20,.08);}
+.dg-inputbar{display:flex;gap:8px;width:min(560px,100%);background:var(--paper);border:1px solid var(--line);
+  padding:6px;border-radius:999px;}
+.dg-inputbar input{flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:var(--font-body);font-size:1rem;padding:9px 14px;color:var(--ink);}
 .dg-inputbar input::placeholder{color:#A99C86;}
 .dg-inputbar button{border:none;border-radius:999px;background:var(--red);color:#FBEFE0;font-family:var(--font-body);
-  font-weight:600;font-size:.95rem;padding:9px 20px;box-shadow:0 3px 0 #4d1212;transition:.12s;white-space:nowrap;}
+  font-weight:600;font-size:.95rem;padding:9px 18px;box-shadow:0 3px 0 #4d1212;transition:.12s;white-space:nowrap;}
 .dg-inputbar button:hover{transform:translateY(-2px);box-shadow:0 5px 0 #4d1212;}
 .dg-inputbar button:active{transform:translateY(2px);box-shadow:0 1px 0 #4d1212;}
 .dg-tip{position:absolute;z-index:6;pointer-events:none;max-width:230px;background:var(--ink);color:#F3EEE2;
@@ -295,7 +349,13 @@ img{max-width:100%;display:block;}
   border-radius:16px;padding:10px 14px;max-width:180px;font-size:.85rem;line-height:1.45;color:var(--ink);
   box-shadow:0 0 0 2px var(--c,#7A1F1F), var(--soft);transition:transform .55s cubic-bezier(.34,1.7,.5,1);}
 .dg-mm__hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:.72rem;color:#F3EEE2;opacity:.85;}
-@media (max-width:560px){.dg-stage{height:min(64vh,500px);}.dg-hud{flex-direction:column;align-items:flex-end;}.dg-legend{flex-wrap:wrap;max-width:150px;}}
+@media (max-width:640px){
+  .dg-stage{height:min(62vh,480px);min-height:380px;}
+  .dg-topbar{flex-direction:column;align-items:flex-start;}
+  .dg-legend{flex-wrap:wrap;max-width:64vw;}
+  .dg-band-label{font-size:.62rem;}
+  .dg-inputbar button{padding:9px 14px;font-size:.9rem;}
+}
 
 /* ============================================================
    RWD 斷點 860 / 560
@@ -313,5 +373,5 @@ img{max-width:100%;display:block;}
 @media (prefers-reduced-motion:reduce){
   *{scroll-behavior:auto!important;}
   .note:hover{animation:none;}
-  .mascot[data-type] .mascot-body,.mascot[data-type] .mascot-feature{animation:none;}
+  .mascot img{animation:none;}
 }

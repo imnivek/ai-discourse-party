@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 議題園 — AI 思辨派對 · Discourse Garden</title>
+<meta name="description" content="AI 議題園：每一次提問，都是一顆種子。逛七大議題園區、把卡關丟進議題池、看議題星圖，找到你要坐的那張桌。">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Fredoka:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/brand.css">
+
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+
+<style>
+/* ============================================================
+   topic-market 頁面特有樣式（元件層皆沿用 brand.css）
+   ============================================================ */
+
+/* ---- Hero：會生長的藤蔓 ---- */
+.t-hero{position:relative;padding-block:calc(var(--nav-h) + 76px) 86px;overflow:hidden;}
+#t-hero-canvas{position:absolute;inset:0;z-index:0;}
+#t-hero-canvas canvas{display:block;}
+.t-hero__inner{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:36px;align-items:center;}
+.t-hero__title{margin:14px 0 18px;}
+.t-hero__aside{display:flex;flex-direction:column;gap:14px;align-items:flex-start;}
+.t-hero__seedline{margin-top:26px;display:flex;gap:10px;flex-wrap:wrap;}
+@media (max-width:860px){.t-hero__inner{grid-template-columns:1fr;gap:24px;}.t-hero__aside{flex-direction:row;flex-wrap:wrap;align-items:center;}}
+
+.sec-head{max-width:56ch;margin-bottom:16px;}
+.sec-head .eyebrow{display:block;margin-bottom:12px;}
+
+/* ---- 花園七區 ---- */
+.garden-stage{
+  position:relative;height:540px;border:1.5px solid var(--line);border-radius:var(--radius-lg);
+  overflow:hidden;box-shadow:var(--soft);
+  background:linear-gradient(180deg,#F8F3E7 0%,#F1EADA 62%,#E9E0CB 100%);
+  margin-top:34px;
+}
+#garden-canvas{position:absolute;inset:0;z-index:1;}
+#garden-canvas canvas{display:block;}
+.garden-stage__tag{position:absolute;top:12px;left:14px;z-index:3;}
+.g-label{
+  position:absolute;z-index:4;transform:translate(-50%,-100%);
+  display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;
+  background:rgba(255,253,246,.92);padding:5px 12px;font-family:var(--font-mono);font-size:.68rem;
+  font-weight:600;letter-spacing:.04em;color:var(--ink);cursor:pointer;box-shadow:var(--soft-sm);
+  transition:transform .16s cubic-bezier(.34,1.56,.64,1),box-shadow .16s,background .16s,color .16s;
+  white-space:nowrap;
+}
+.g-label i{width:9px;height:9px;border-radius:3px;background:var(--zc,#7A1F1F);flex-shrink:0;}
+.g-label em{font-style:normal;font-family:var(--font-num);font-weight:600;color:var(--ink-soft);}
+.g-label:hover{transform:translate(-50%,-100%) translateY(-3px) scale(1.05);box-shadow:var(--soft);}
+.g-label.is-active{background:var(--zc,#7A1F1F);color:#FFFDF6;border-color:transparent;}
+.g-label.is-active i{background:#FFFDF6;}
+.g-label.is-active em{color:rgba(255,253,246,.85);}
+.g-tip{
+  position:absolute;z-index:5;pointer-events:none;max-width:250px;background:var(--ink);color:#F3EEE2;
+  font-size:.8rem;line-height:1.5;padding:9px 13px;border-radius:12px;box-shadow:var(--soft);
+  opacity:0;transition:opacity .15s;
+}
+.g-tip.is-show{opacity:1;}
+.g-tip b{color:var(--c-ask);font-family:var(--font-mono);font-size:.7rem;display:block;margin-bottom:2px;}
+
+.garden-detail{
+  margin-top:22px;background:var(--card);border:1px solid var(--line);
+  border-left:12px solid var(--zc,#7A1F1F);border-radius:var(--radius-lg);box-shadow:var(--soft-sm);
+  padding:26px 28px;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:26px;align-items:start;
+  transition:border-color .3s;
+}
+.garden-detail__emoji{font-size:2rem;line-height:1;}
+.garden-detail__zh{font-family:var(--font-display);font-weight:900;font-size:1.6rem;margin-top:8px;}
+.garden-detail__en{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;color:var(--red);text-transform:uppercase;margin:4px 0 12px;}
+.garden-detail__desc{color:var(--ink-soft);line-height:1.75;}
+.garden-detail__meta{display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;}
+.garden-detail__topics{display:flex;flex-direction:column;gap:10px;}
+.g-topic{
+  display:flex;align-items:center;gap:10px;background:var(--paper);border:1px dashed var(--line);
+  border-radius:12px;padding:10px 14px;font-size:.94rem;transition:transform .14s,border-color .14s;
+}
+.g-topic:hover{transform:translateX(4px);border-color:var(--zc,#7A1F1F);}
+.g-topic .mono{font-size:.64rem;color:var(--zc,#7A1F1F);flex-shrink:0;}
+@media (max-width:860px){
+  .garden-stage{height:660px;}
+  .garden-detail{grid-template-columns:1fr;gap:18px;}
+}
+@media (max-width:560px){
+  .garden-stage{height:600px;}
+  .g-label{font-size:.6rem;padding:4px 9px;gap:5px;}
+}
+
+/* ---- 思辨方塊投稿 ---- */
+.tm-game-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:22px;}
+.tm-game-mascots{display:flex;gap:6px;align-items:flex-end;}
+.tm-game-mascots .mascot{width:74px;height:90px;}
+@media (max-width:560px){.tm-game-mascots .mascot{width:58px;height:70px;}}
+
+/* ---- 議題星圖（深色區）---- */
+.starfield{background:linear-gradient(180deg,#241D16 0%,#1B1511 100%);color:#F3EEE2;overflow:hidden;}
+.starfield .display{color:#F8F1E4;}
+.starfield .eyebrow{color:var(--c-ask);}
+.starfield .lead{color:rgba(233,225,210,.78);}
+.star-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:26px;margin-top:36px;align-items:stretch;}
+.star-stage{
+  position:relative;min-height:500px;border:1px solid rgba(233,225,210,.18);border-radius:var(--radius-lg);
+  background:radial-gradient(120% 90% at 50% 8%,rgba(122,31,31,.22) 0%,transparent 55%),#171310;
+  overflow:hidden;
+}
+#star-canvas{position:absolute;inset:0;z-index:1;}
+#star-canvas canvas{display:block;}
+.star-stage__tag{position:absolute;top:12px;left:14px;z-index:3;background:var(--c-ask);color:#1A1613;}
+.s-tip{
+  position:absolute;z-index:5;pointer-events:none;background:#FFFDF6;color:var(--ink);
+  font-size:.8rem;line-height:1.45;padding:8px 12px;border-radius:12px;box-shadow:var(--soft);
+  opacity:0;transition:opacity .15s;max-width:220px;
+}
+.s-tip.is-show{opacity:1;}
+.s-tip b{font-family:var(--font-mono);font-size:.66rem;color:var(--red);display:block;}
+.star-detail{
+  background:rgba(255,253,246,.05);border:1px solid rgba(233,225,210,.16);border-radius:var(--radius-lg);
+  padding:26px;display:flex;flex-direction:column;gap:12px;
+}
+.star-detail__cat{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--sc,#E0A92E);}
+.star-detail__name{font-family:var(--font-display);font-weight:900;font-size:1.7rem;color:#F8F1E4;line-height:1.2;}
+.star-detail__desc{color:rgba(233,225,210,.8);line-height:1.75;font-size:.95rem;}
+.star-detail .progress{background:rgba(255,253,246,.1);border-color:rgba(233,225,210,.2);}
+.star-detail .progress__bar{background:var(--sc,#E0A92E);}
+.star-detail__stats{display:flex;gap:24px;margin-top:2px;}
+.star-detail__stats .stat__num{color:var(--sc,#E0A92E);font-size:2rem;}
+.star-detail__stats .stat__label{color:rgba(233,225,210,.55);}
+.star-detail__roles{display:flex;gap:8px;flex-wrap:wrap;}
+.star-detail__roles .chip{background:rgba(255,253,246,.06);border-color:rgba(233,225,210,.2);color:rgba(233,225,210,.85);}
+.star-detail__hint{font-family:var(--font-mono);font-size:.66rem;color:rgba(233,225,210,.45);letter-spacing:.06em;margin-top:auto;}
+@media (max-width:860px){.star-grid{grid-template-columns:1fr;}.star-stage{min-height:420px;}}
+@media (max-width:560px){.star-stage{min-height:360px;}}
+
+/* ---- 熱門議題卡（偵測框 HUD × 便利貼）---- */
+.topic-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:38px;}
+@media (max-width:860px){.topic-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:560px){.topic-grid{grid-template-columns:1fr;}}
+.topic-card{
+  position:relative;background:var(--card);border:1.5px solid var(--red);border-radius:var(--radius);
+  box-shadow:var(--soft-sm);padding:26px 22px 22px;display:flex;flex-direction:column;gap:14px;
+  transition:transform .2s cubic-bezier(.34,1.5,.6,1),box-shadow .2s;
+}
+.topic-card:hover{transform:translateY(-6px);box-shadow:var(--soft);}
+.topic-card .corner{position:absolute;width:15px;height:15px;border:2.5px solid var(--red);}
+.topic-card .corner--tl{top:-2px;left:-2px;border-right:none;border-bottom:none;border-top-left-radius:8px;}
+.topic-card .corner--tr{top:-2px;right:-2px;border-left:none;border-bottom:none;border-top-right-radius:8px;}
+.topic-card .corner--bl{bottom:-2px;left:-2px;border-right:none;border-top:none;border-bottom-left-radius:8px;}
+.topic-card .corner--br{bottom:-2px;right:-2px;border-left:none;border-top:none;border-bottom-right-radius:8px;}
+.topic-card__meta{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.12em;color:var(--red);text-transform:uppercase;display:flex;justify-content:space-between;gap:8px;}
+.topic-card__meta .blink{animation:tc-blink 1.6s steps(2) infinite;}
+@keyframes tc-blink{50%{opacity:.15;}}
+.topic-card__name{font-family:var(--font-display);font-weight:900;font-size:1.32rem;line-height:1.35;padding-right:58px;}
+.topic-card__heat-tag{
+  position:absolute;top:38px;right:14px;width:58px;height:58px;border-radius:10px;
+  background:var(--hc,var(--c-ask));box-shadow:var(--soft-sm);transform:rotate(6deg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;color:#FFFDF6;
+}
+.topic-card__heat-tag .n{font-family:var(--font-num);font-weight:700;font-size:1.25rem;line-height:1;}
+.topic-card__heat-tag .l{font-family:var(--font-mono);font-size:.5rem;letter-spacing:.1em;opacity:.85;margin-top:2px;}
+.topic-card__heat-tag::before{content:"";position:absolute;top:-7px;left:50%;width:13px;height:13px;transform:translateX(-50%);
+  border-radius:50%;background:var(--red);box-shadow:0 2px 0 #4d1212,inset 0 -2px 3px rgba(0,0,0,.25);}
+.topic-card:hover .topic-card__heat-tag{animation:note-wiggle .4s ease-in-out;}
+.topic-card__bar{display:flex;align-items:center;gap:10px;}
+.topic-card__bar .progress{flex:1;}
+.topic-card__bar .num{font-size:.85rem;color:var(--ink-soft);flex-shrink:0;}
+.topic-card__roles{display:flex;gap:7px;flex-wrap:wrap;}
+.topic-card__roles .chip{font-size:.74rem;padding:4px 11px;}
+.topic-card__foot{margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.topic-card__people{font-family:var(--font-mono);font-size:.7rem;color:var(--ink-soft);}
+.badge--live{background:var(--c-build);}
+.badge--brew{background:var(--paper-2);color:var(--ink-soft);border:1px solid var(--line);}
+.topic-card.is-flash{animation:tc-flash 1.2s ease;}
+@keyframes tc-flash{0%,60%{box-shadow:0 0 0 4px var(--c-ask),var(--soft);}100%{box-shadow:var(--soft-sm);}}
+
+/* ---- CTA ---- */
+.tm-cta{text-align:center;}
+.tm-cta__quote{font-family:var(--font-display);font-weight:900;font-size:clamp(1.6rem,4vw,2.6rem);line-height:1.4;margin:14px 0 26px;}
+.tm-cta__quote .mk{color:var(--red);}
+
+@media (prefers-reduced-motion:reduce){
+  .topic-card__meta .blink{animation:none;}
+  .topic-card:hover .topic-card__heat-tag{animation:none;}
+  .topic-card.is-flash{animation:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ======= HERO：會生長的議題園 ======= -->
+<header class="t-hero bg-grid">
+  <div id="t-hero-canvas"></div>
+  <div class="container t-hero__inner">
+    <div>
+      <span class="eyebrow">DISCOURSE GARDEN · 議題市集</span>
+      <h1 class="display display--xl t-hero__title">AI 議題園</h1>
+      <p class="lead">每一次提問，都是一顆<span class="underline-mark">種子</span>。丟進園子裡，它會和別人的問題纏在一起，長成沒有人單獨想得出來的答案。</p>
+      <div class="t-hero__seedline">
+        <a href="#garden"><button class="btn btn--primary">🌿 逛七大園區</button></a>
+        <a href="#pool"><button class="btn btn--ghost">把卡關丟進議題池</button></a>
+      </div>
+    </div>
+    <aside class="t-hero__aside">
+      <div class="hud"><span class="hud__icon">🌱</span><div><div class="hud__num" id="hero-seeds">182</div><div class="hud__label">本季種下的議題</div></div></div>
+      <div class="hud"><span class="hud__icon">💎</span><div><div class="hud__num" id="hero-score">0</div><div class="hud__label">你的花園結晶</div></div></div>
+      <span class="chip"><span class="chip__dot"></span>THINK · DEBATE · GROW</span>
+    </aside>
+  </div>
+</header>
+
+<!-- ======= 01 花園七區 ======= -->
+<section class="section" id="garden">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">01 — SEVEN GARDEN ZONES</span>
+      <h2 class="display display--lg">七座園區，<span class="underline-mark">正在生長中</span>。</h2>
+      <p class="lead" style="margin-top:8px;">每一區都是一叢還在長大的議題。移過去看看誰在裡面發芽，點一下，展開該區最熱的討論。</p>
+    </div>
+    <div class="garden-stage" id="garden-stage">
+      <span class="badge garden-stage__tag">🗺 GARDEN MAP · LIVE</span>
+      <div id="garden-canvas"></div>
+      <div class="g-tip" id="g-tip"></div>
+    </div>
+    <div class="garden-detail" id="garden-detail">
+      <div>
+        <span class="garden-detail__emoji" id="gd-emoji">🌱</span>
+        <h3 class="garden-detail__zh" id="gd-zh">點一座園區</h3>
+        <div class="garden-detail__en" id="gd-en">PICK A ZONE</div>
+        <p class="garden-detail__desc" id="gd-desc">在上面的花園地圖裡，點任何一叢植物或它的標籤，就能看到那一區正在討論什麼。</p>
+        <div class="garden-detail__meta">
+          <div class="stat"><span class="stat__num num" id="gd-count" style="font-size:1.9rem;">—</span><span class="stat__label">生長中議題</span></div>
+          <div class="stat"><span class="stat__num num" id="gd-hot" style="font-size:1.9rem;">—</span><span class="stat__label">本週新芽</span></div>
+        </div>
+      </div>
+      <div class="garden-detail__topics" id="gd-topics"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= 02 思辨方塊投稿 ======= -->
+<section class="section" id="pool" style="background:var(--paper-2);">
+  <div class="container">
+    <div class="tm-game-head">
+      <div class="sec-head" style="margin-bottom:0;">
+        <span class="eyebrow">02 — PLANT YOUR QUESTION</span>
+        <h2 class="display display--lg">把你的卡關，<span class="underline-mark">丟進議題池</span>。</h2>
+        <p class="lead" style="margin-top:8px;">寫下卡住你的事，它會變成一塊思辨方塊落進池子。三塊同色靠在一起，就會凝成一顆「思想結晶」——點結晶，看見大家的原始投稿。這座池子和首頁共用同一座花園存檔。</p>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+        <div class="tm-game-mascots"><span id="m-ask"></span><span id="m-connect"></span></div>
+        <div class="stat" style="align-items:flex-end;"><span class="stat__num num" id="tm-score">0</span><span class="stat__label">思想結晶數</span></div>
+      </div>
+    </div>
+    <div id="tm-game-mount"></div>
+  </div>
+</section>
+
+<!-- ======= 03 議題星圖 ======= -->
+<section class="section starfield" id="starmap">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">03 — TOPIC CONSTELLATION</span>
+      <h2 class="display display--lg">議題星圖：<br>看見問題之間的<span style="color:var(--c-ask);">引力</span>。</h2>
+      <p class="lead" style="margin-top:8px;">園子入夜之後，議題升上天空變成星座。星星越大越熱、顏色代表分類、連線是它們在討論裡互相牽引的軌跡。點一顆星，看它的檔案。</p>
+    </div>
+    <div class="star-grid">
+      <div class="star-stage" id="star-stage">
+        <span class="badge star-stage__tag">✦ CONSTELLATION · 10 NODES</span>
+        <div id="star-canvas"></div>
+        <div class="s-tip" id="s-tip"></div>
+      </div>
+      <aside class="star-detail" id="star-detail">
+        <span class="star-detail__cat" id="sd-cat">— 心態與焦慮</span>
+        <h3 class="star-detail__name" id="sd-name">AI 個人焦慮</h3>
+        <p class="star-detail__desc" id="sd-desc">「我會被取代嗎？」全站最熱的一顆星。每一場派對都有人帶著它進場，也有人帶著新的答案離開。</p>
+        <div class="progress"><div class="progress__bar" id="sd-bar" style="width:92%;"></div></div>
+        <div class="star-detail__stats">
+          <div class="stat"><span class="stat__num num" id="sd-heat">92</span><span class="stat__label">熱度指數</span></div>
+          <div class="stat"><span class="stat__num num" id="sd-ppl">48</span><span class="stat__label">認領人數</span></div>
+        </div>
+        <div class="star-detail__roles" id="sd-roles"></div>
+        <span class="star-detail__hint" id="sd-hint">HOVER = 預覽 · CLICK = 讀取星星檔案</span>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ======= 04 熱門議題卡 ======= -->
+<section class="section" id="hot">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">04 — HOT TOPICS DETECTED</span>
+      <h2 class="display display--lg">本季<span class="underline-mark">熱門議題卡</span>。</h2>
+      <p class="lead" style="margin-top:8px;">偵測框已鎖定：這幾張議題最多人認領。標了「下場開桌」的，下一場派對就會有它的桌子。</p>
+    </div>
+    <div class="topic-grid" id="topic-grid">
+
+      <article class="topic-card" data-topic="AI 個人焦慮" style="--hc:var(--c-debate);">
+        <i class="corner corner--tl"></i><i class="corner corner--tr"></i><i class="corner corner--bl"></i><i class="corner corner--br"></i>
+        <div class="topic-card__meta"><span>TOPIC-01 · HUMAN CAMP</span><span class="blink">● REC</span></div>
+        <h3 class="topic-card__name">「AI 會取代我嗎」職涯焦慮解剖桌</h3>
+        <div class="topic-card__heat-tag"><span class="n num">92</span><span class="l">HEAT</span></div>
+        <div class="topic-card__bar"><div class="progress"><div class="progress__bar" style="width:92%;background:var(--c-debate);"></div></div><span class="num">92%</span></div>
+        <div class="topic-card__roles">
+          <span class="chip"><span class="chip__dot" style="background:var(--c-debate);"></span>辨辨</span>
+          <span class="chip"><span class="chip__dot" style="background:var(--c-listen);"></span>聽聽</span>
+        </div>
+        <div class="topic-card__foot"><span class="topic-card__people num">👥 48 人認領</span><span class="badge badge--live">🔥 下場開桌</span></div>
+      </article>
+
+      <article class="topic-card" data-topic="Prompt 急診室" style="--hc:var(--c-ask);">
+        <i class="corner corner--tl"></i><i class="corner corner--tr"></i><i class="corner corner--bl"></i><i class="corner corner--br"></i>
+        <div class="topic-card__meta"><span>TOPIC-02 · PROMPT NURSERY</span><span class="blink">● REC</span></div>
+        <h3 class="topic-card__name">Prompt 不聽話急診室</h3>
+        <div class="topic-card__heat-tag"><span class="n num">87</span><span class="l">HEAT</span></div>
+        <div class="topic-card__bar"><div class="progress"><div class="progress__bar" style="width:87%;background:var(--c-ask);"></div></div><span class="num">87%</span></div>
+        <div class="topic-card__roles">
+          <span class="chip"><span class="chip__dot" style="background:var(--c-ask);"></span>問問</span>
+          <span class="chip"><span class="chip__dot" style="background:var(--c-build);"></span>做做</span>
+        </div>
+        <div class="topic-card__foot"><span class="topic-card__people num">👥 38 人認領</span><span class="badge badge--live">🔥 下場開桌</span></div>
+      </article>
+
+      <article class="topic-card" data-topic="一人公司工作流" style="--hc:var(--c-listen);">
+        <i class="corner corner--tl"></i><i class="corner corner--tr"></i><i class="corner corner--bl"></i><i class="corner corner--br"></i>
+        <div class="topic-card__meta"><span>TOPIC-03 · WORKFLOW VINEWAY</span><span class="blink">● REC</span></div>
+        <h3 class="topic-card__name">一人公司的 AI 工作流交換所</h3>
+        <div class="topic-card__heat-tag"><span class="n num">81</span><span class="l">HEAT</span></div>
+        <div class="topic-card__bar"><div class="progress"><div class="progress__bar" style="width:81%;background:var(--c-listen);"></div></div><span class="num">81%</span></div>
+        <div class="topic-card__roles">
+          <span class="chip"><span class="chip__dot" style="background:var(--c-build);"></span>做做</span>
+          <span class="chip"><span class="chip__dot" style="background:var(--c-listen);"></span>聽聽</span>
+        </div>
+        <div class="topic-card__foot"><span class="topic-card__people num">👥 35 人認領</span><span class="badge badge--live">🔥 下場開桌</span></div>
+      </article>
+
+      <article class="topic-card" data-topic="AI 內容倫理" style="--hc:var(--c-build);">
+        <i class="corner corner--tl"></i><i class="corner corner--tr"></i><i class="corner corner--bl"></i><i class="corner corner--br"></i>
+        <div class="topic-card__meta"><span>TOPIC-04 · ETHICS POND</span><span class="blink">● SCAN</span></div>
+        <h3 class="topic-card__name">AI 內容的版權與真實性邊界</h3>
+        <div class="topic-card__heat-tag"><span class="n num">76</span><span class="l">HEAT</span></div>
+        <div class="topic-card__bar"><div class="progress"><div class="progress__bar" style="width:76%;background:var(--c-build);"></div></div><span class="num">76%</span></div>
+        <div class="topic-card__roles">
+          <span class="chip"><span class="chip__dot" style="background:var(--c-debate);"></span>辨辨</span>
+          <span class="chip"><span class="chip__dot" style="background:var(--c-build);"></span>做做</span>
+        </div>
+        <div class="topic-card__foot"><span class="topic-card__people num">👥 29 人認領</span><span class="badge badge--brew">🌱 醞釀中</span></div>
+      </article>
+
+      <article class="topic-card" data-topic="AI 個人品牌" style="--hc:var(--c-connect);">
+        <i class="corner corner--tl"></i><i class="corner corner--tr"></i><i class="corner corner--bl"></i><i class="corner corner--br"></i>
+        <div class="topic-card__meta"><span>TOPIC-05 · BRAND PERGOLA</span><span class="blink">● SCAN</span></div>
+        <h3 class="topic-card__name">用 AI 打造個人品牌，還有「人味」嗎</h3>
+        <div class="topic-card__heat-tag"><span class="n num">71</span><span class="l">HEAT</span></div>
+        <div class="topic-card__bar"><div class="progress"><div class="progress__bar" style="width:71%;background:var(--c-connect);"></div></div><span class="num">71%</span></div>
+        <div class="topic-card__roles">
+          <span class="chip"><span class="chip__dot" style="background:var(--c-connect);"></span>連連</span>
+          <span class="chip"><span class="chip__dot" style="background:var(--c-ask);"></span>問問</span>
+        </div>
+        <div class="topic-card__foot"><span class="topic-card__people num">👥 26 人認領</span><span class="badge badge--brew">🌱 醞釀中</span></div>
+      </article>
+
+      <article class="topic-card" data-topic="AI 教育現場" style="--hc:var(--c-build);">
+        <i class="corner corner--tl"></i><i class="corner corner--tr"></i><i class="corner corner--bl"></i><i class="corner corner--br"></i>
+        <div class="topic-card__meta"><span>TOPIC-06 · EDUCATION GROVE</span><span class="blink">● REC</span></div>
+        <h3 class="topic-card__name">當 AI 什麼都會答，老師還教什麼</h3>
+        <div class="topic-card__heat-tag"><span class="n num">68</span><span class="l">HEAT</span></div>
+        <div class="topic-card__bar"><div class="progress"><div class="progress__bar" style="width:68%;background:var(--c-build);"></div></div><span class="num">68%</span></div>
+        <div class="topic-card__roles">
+          <span class="chip"><span class="chip__dot" style="background:var(--c-listen);"></span>聽聽</span>
+          <span class="chip"><span class="chip__dot" style="background:var(--c-build);"></span>做做</span>
+        </div>
+        <div class="topic-card__foot"><span class="topic-card__people num">👥 24 人認領</span><span class="badge badge--live">🔥 下場開桌</span></div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ======= CTA ======= -->
+<section class="section tm-cta" style="background:var(--paper-2);">
+  <div class="container">
+    <span class="eyebrow">BRING IT TO THE TABLE</span>
+    <p class="tm-cta__quote">園子裡的種子夠多了，<br>缺的是<span class="mk">你坐下來的那張椅子</span>。</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <a href="about.html#join"><button class="btn btn--primary">報名下一場派對 ▶</button></a>
+      <a href="community.html"><button class="btn btn--ghost">先去採集隊逛逛</button></a>
+    </div>
+  </div>
+</section>
+
+<script src="assets/brand.js"></script>
+<script>
+/* ============================================================
+   topic-market.html 頁面腳本 —— AI 議題園
+   ============================================================ */
+Brand.initChrome('topic');
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const TC = Brand.colors;
+
+/* 小工具 */
+function mulberry32(seed){ let a = seed >>> 0; return function(){ a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function hexA(hex, a){ const n = parseInt(hex.slice(1), 16); return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')'; }
+
+/* HUD：與全站共用的採集分數 */
+document.getElementById('hero-score').textContent = Brand.state.get().score;
+
+/* ============================================================
+   HERO — 會生長的藤蔓生成藝術（畫進 buffer，逐幀長出）
+   ============================================================ */
+Brand.onView(document.querySelector('.t-hero'), () => (p) => {
+  let W, H, host, pg, vines = [], spores = [], budCols;
+  const MAX_VINES = () => (W < 720 ? 26 : 46);
+
+  function seedVines(){
+    vines = [];
+    const roots = W < 720 ? 4 : 7;
+    for (let i = 0; i < roots; i++){
+      vines.push({ x: (i + 0.5) * W / roots + p.random(-40, 40), y: H + 6, ang: -p.HALF_PI + p.random(-0.25, 0.25), life: p.random(H * 0.45, H * 0.85), col: p.random(budCols), w: p.random(1.6, 2.6) });
+    }
+  }
+  function growStep(v){
+    if (v.life <= 0) return;
+    const nx = v.x + Math.cos(v.ang) * 3.2, ny = v.y + Math.sin(v.ang) * 3.2;
+    pg.stroke(122, 31, 31, 60); pg.strokeWeight(v.w);
+    pg.line(v.x, v.y, nx, ny);
+    v.x = nx; v.y = ny; v.ang += p.random(-0.22, 0.22); v.ang = p.lerp(v.ang, -p.HALF_PI, 0.04);
+    v.life -= 3.2;
+    if (p.random() < 0.045){ /* 側葉 */
+      const la = v.ang + (p.random() < 0.5 ? 1 : -1) * p.random(0.9, 1.5);
+      pg.noStroke(); pg.fill(hexA('#4E9A4A', 0.28));
+      pg.push(); pg.translate(v.x, v.y); pg.rotate(la); pg.ellipse(7, 0, 13, 5.5); pg.pop();
+    }
+    if (p.random() < 0.028 && vines.length < MAX_VINES()){ /* 分支 */
+      vines.push({ x: v.x, y: v.y, ang: v.ang + p.random(-0.9, 0.9), life: v.life * p.random(0.4, 0.7), col: p.random(budCols), w: Math.max(1, v.w * 0.75) });
+    }
+    if (v.life <= 0){ /* 頂端小芽（型別色） */
+      pg.noStroke(); pg.fill(hexA(v.col, 0.16)); pg.circle(v.x, v.y, 17);
+      pg.fill(hexA(v.col, 0.75)); pg.circle(v.x, v.y, 7.5);
+      pg.fill(255, 253, 246, 190); pg.circle(v.x - 1.4, v.y - 1.4, 2.4);
+    }
+  }
+  p.setup = () => {
+    host = document.querySelector('.t-hero');
+    W = host.offsetWidth; H = host.offsetHeight;
+    budCols = [TC.ask, TC.listen, TC.debate, TC.build, TC.connect];
+    const c = p.createCanvas(W, H); c.parent('t-hero-canvas');
+    p.pixelDensity(Math.min(window.devicePixelRatio || 1, 1.5));
+    pg = p.createGraphics(W, H); pg.pixelDensity(1); pg.clear();
+    seedVines();
+    const n = W < 720 ? 10 : 20;
+    spores = [];
+    for (let i = 0; i < n; i++) spores.push({ x: p.random(W), y: p.random(H), r: p.random(2, 5), sp: p.random(0.1, 0.4), ph: p.random(p.TWO_PI), c: p.random(budCols) });
+    if (REDUCED){ for (let g = 0; g < 1200; g++){ for (const v of vines) growStep(v); } }
+  };
+  p.draw = () => {
+    p.clear();
+    if (!REDUCED){ for (let s = 0; s < 3; s++) for (const v of vines) growStep(v); }
+    p.image(pg, 0, 0, W, H);
+    for (const sp of spores){
+      if (!REDUCED){ sp.y -= sp.sp; sp.ph += 0.02; sp.x += Math.sin(sp.ph) * 0.35; if (sp.y < -10){ sp.y = H + 10; sp.x = p.random(W); } }
+      p.noStroke(); p.fill(hexA(sp.c, 0.22)); p.circle(sp.x, sp.y, sp.r * 2);
+    }
+  };
+  p.windowResized = () => {
+    W = host.offsetWidth; H = host.offsetHeight; p.resizeCanvas(W, H);
+    pg = p.createGraphics(W, H); pg.pixelDensity(1); pg.clear(); seedVines();
+    if (REDUCED){ for (let g = 0; g < 1200; g++){ for (const v of vines) growStep(v); } }
+  };
+});
+
+/* ============================================================
+   01 — 花園七區（互動生成藝術）
+   ============================================================ */
+const ZONES = [
+  { id:'prompt',   zh:'Prompt 苗圃',    en:'PROMPT NURSERY',   emoji:'🌱', color:TC.ask,     form:'sprout',  seed:11, count:24, fresh:6,
+    desc:'指令寫不出想要的結果？這一畦專治各種「AI 不聽話」。從咒語結構到風格控制，最多新手在這裡發芽。',
+    topics:['prompt 一直寫不出想要的圖','系統提示詞的結構化寫法','怎麼讓 AI 模仿我的文風','角色扮演 prompt 的邊界在哪'] },
+  { id:'workflow', zh:'Workflow 藤道',  en:'WORKFLOW VINEWAY', emoji:'🌿', color:TC.listen,  form:'vine',    seed:22, count:31, fresh:9,
+    desc:'把重複的事交給 AI，讓流程像藤蔓一樣自己往前爬。實作者密度最高的一條路。',
+    topics:['一人公司的 AI 自動化','會議記錄到待辦的全自動流','n8n / Zapier 接 AI 的坑','多代理協作到底實不實用'] },
+  { id:'brand',    zh:'Brand 花棚',     en:'BRAND PERGOLA',    emoji:'🌸', color:TC.connect, form:'trellis', seed:33, count:19, fresh:4,
+    desc:'AI 時代的個人與企業品牌，要怎麼開出自己的花、又不失去人味。',
+    topics:['用 AI 打造個人品牌','品牌語氣可以外包給 AI 嗎','AI 生成視覺的品牌一致性'] },
+  { id:'edu',      zh:'Education 書林', en:'EDUCATION GROVE',  emoji:'📚', color:TC.build,   form:'tree',    seed:44, count:22, fresh:5,
+    desc:'當 AI 什麼都會答，教與學還剩下什麼？老師、家長、自學者都在這片樹蔭下吵得很開心。',
+    topics:['老師還需要教什麼','小孩用 AI 寫作業怎麼辦','自學者的 AI 學習路徑'] },
+  { id:'biz',      zh:'Business 果園',  en:'BUSINESS ORCHARD', emoji:'🍎', color:TC.debate,  form:'orchard', seed:55, count:27, fresh:7,
+    desc:'AI 導入的成本、營收與果實，什麼時候才會熟？創業者與導入者的交換市場。',
+    topics:['中小企業 AI 導入第一步','AI 創業的護城河在哪','怎麼向老闆證明 AI 的 ROI'] },
+  { id:'ethics',   zh:'Ethics 水池',    en:'ETHICS POND',      emoji:'💧', color:TC.listen,  form:'pond',    seed:66, count:24, fresh:5,
+    desc:'版權、真實性、偏見與信任。往水面丟一個問題，漣漪會把大家都捲進來。',
+    topics:['AI 生成內容有版權嗎','AI 說的話能相信嗎','演算法偏見誰負責'] },
+  { id:'camp',     zh:'Human Camp',     en:'HUMAN CAMP',       emoji:'⛺', color:'#7A1F1F',  form:'camp',    seed:77, count:35, fresh:11,
+    desc:'焦慮、取代感、還有身而為人的一切。這裡有一堆火，圍過來坐，不用急著有答案。',
+    topics:['AI 會取代我的工作嗎','學不動的焦慮怎麼辦','人類還剩下什麼優勢','要不要告訴老闆我都在用 AI'] }
+];
+const ZONE_WIDE   = [[.09,.72],[.23,.36],[.375,.72],[.52,.34],[.665,.72],[.80,.36],[.91,.74]];
+const ZONE_NARROW = [[.26,.13],[.74,.21],[.26,.37],[.74,.45],[.26,.61],[.74,.69],[.50,.90]];
+
+const gStage = document.getElementById('garden-stage');
+const gTip = document.getElementById('g-tip');
+let gLabels = [], activeZone = -1, hoverZone = -1;
+
+/* DOM 標籤層 */
+ZONES.forEach((z, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'g-label'; b.style.setProperty('--zc', z.color);
+  b.innerHTML = '<i></i>' + z.zh + ' <em>' + z.count + '</em>';
+  b.setAttribute('aria-label', z.zh + '，' + z.count + ' 條議題');
+  b.addEventListener('click', () => selectZone(i));
+  gStage.appendChild(b); gLabels.push(b);
+});
+
+function zoneAnchors(W, H){
+  const narrow = W < 680;
+  const list = narrow ? ZONE_NARROW : ZONE_WIDE;
+  return list.map((a) => ({ x: a[0] * W, y: a[1] * H }));
+}
+function placeLabels(W, H, S){
+  const an = zoneAnchors(W, H);
+  gLabels.forEach((el, i) => {
+    el.style.left = an[i].x + 'px';
+    el.style.top = Math.max(30, an[i].y - S * 0.72) + 'px';
+  });
+}
+function selectZone(i){
+  activeZone = i;
+  gLabels.forEach((el, k) => el.classList.toggle('is-active', k === i));
+  const z = ZONES[i];
+  const d = document.getElementById('garden-detail');
+  d.style.setProperty('--zc', z.color);
+  document.getElementById('gd-emoji').textContent = z.emoji;
+  document.getElementById('gd-zh').textContent = z.zh;
+  document.getElementById('gd-en').textContent = z.en + ' · ZONE 0' + (i + 1);
+  document.getElementById('gd-desc').textContent = z.desc;
+  document.getElementById('gd-count').textContent = z.count;
+  document.getElementById('gd-hot').textContent = '+' + z.fresh;
+  const box = document.getElementById('gd-topics');
+  box.innerHTML = '';
+  z.topics.forEach((t, k) => {
+    const el = document.createElement('div');
+    el.className = 'g-topic'; el.style.setProperty('--zc', z.color);
+    el.innerHTML = '<span class="mono">SEED-' + String(k + 1).padStart(2, '0') + '</span>' + t;
+    box.appendChild(el);
+  });
+}
+selectZone(6); /* 預設展開最熱的 Human Camp */
+
+Brand.onView(gStage, () => (p) => {
+  let W, H, S, anchors, t = 0, pollen = [];
+
+  p.setup = () => {
+    W = gStage.clientWidth; H = gStage.clientHeight;
+    const c = p.createCanvas(W, H); c.parent('garden-canvas');
+    p.pixelDensity(Math.min(window.devicePixelRatio || 1, 1.5));
+    relayout();
+    const n = W < 720 ? 8 : 16;
+    for (let i = 0; i < n; i++) pollen.push({ x: p.random(W), y: p.random(H), ph: p.random(p.TWO_PI), sp: p.random(0.15, 0.4) });
+  };
+  function relayout(){
+    S = Math.max(72, Math.min(150, Math.min(W * 0.15, H * 0.24)));
+    anchors = zoneAnchors(W, H);
+    placeLabels(W, H, S);
+  }
+  function parallax(i){
+    if (REDUCED) return { dx: 0, dy: 0 };
+    const depth = 0.4 + (1 - anchors[i].y / H) * 0.8; /* 越上面越遠，位移越大 */
+    const mx = p.constrain(p.mouseX / W, 0, 1) - 0.5, my = p.constrain(p.mouseY / H, 0, 1) - 0.5;
+    return { dx: -mx * 22 * depth, dy: -my * 10 * depth };
+  }
+  const sway = (ph, hot) => REDUCED ? 0 : Math.sin(t * 1.6 + ph) * (0.05 + hot * 0.03);
+
+  /* ---- 各區植物形態 ---- */
+  function drawSprout(z, hot){
+    const rnd = mulberry32(z.seed);
+    for (let i = 0; i < 6; i++){
+      const bx = (i / 5 - 0.5) * S * 1.05, h = S * (0.34 + rnd() * 0.36), ph = rnd() * 6;
+      p.push(); p.translate(bx, 0); p.rotate(sway(ph, hot));
+      p.stroke('#7C9A62'); p.strokeWeight(2.4); p.noFill();
+      p.bezier(0, 0, 2, -h * 0.4, -3, -h * 0.7, 0, -h);
+      p.noStroke(); p.fill(hexA('#4E9A4A', 0.55));
+      p.push(); p.translate(1, -h * 0.5); p.rotate(-0.7); p.ellipse(6, 0, 13, 5); p.pop();
+      p.push(); p.translate(-1, -h * 0.62); p.rotate(0.7 + Math.PI); p.ellipse(6, 0, 11, 4.5); p.pop();
+      p.fill(z.color); p.circle(0, -h, 6 + rnd() * 6);
+      p.fill(255, 253, 246, 170); p.circle(-1.2, -h - 1.2, 2.6);
+      p.pop();
+    }
+  }
+  function drawVine(z, hot){
+    const rnd = mulberry32(z.seed);
+    p.push(); p.rotate(sway(0, hot) * 0.4);
+    p.stroke('#6E8F5A'); p.strokeWeight(3); p.noFill();
+    p.beginShape();
+    const n = 9;
+    for (let i = 0; i <= n; i++){
+      const x = (i / n - 0.5) * S * 1.5;
+      const y = -S * 0.24 + Math.sin(i * 1.15 + 1) * S * 0.16;
+      p.curveVertex(x, y); if (i === 0 || i === n) p.curveVertex(x, y);
+    }
+    p.endShape();
+    for (let i = 1; i < n; i += 2){
+      const x = (i / n - 0.5) * S * 1.5, y = -S * 0.24 + Math.sin(i * 1.15 + 1) * S * 0.16;
+      p.noStroke(); p.fill(hexA('#4E9A4A', 0.5));
+      p.push(); p.translate(x, y); p.rotate(rnd() * 2 - 1); p.ellipse(7, 0, 14, 6); p.pop();
+      p.fill(z.color); p.circle(x, y, 8 + rnd() * 5);
+      p.fill(255, 253, 246, 160); p.circle(x - 1.4, y - 1.4, 2.6);
+    }
+    p.pop();
+  }
+  function drawTrellis(z, hot){
+    const rnd = mulberry32(z.seed);
+    p.stroke('#8A6B4A'); p.strokeWeight(4.5);
+    p.line(-S * 0.5, 0, -S * 0.5, -S * 0.62); p.line(S * 0.5, 0, S * 0.5, -S * 0.62);
+    p.noFill(); p.strokeWeight(3.5);
+    p.arc(0, -S * 0.62, S, S * 0.6, Math.PI, 0);
+    for (let i = 0; i < 7; i++){
+      const a = Math.PI + (i + 0.5) / 7 * Math.PI;
+      const fx = Math.cos(a) * S * 0.5, fy = -S * 0.62 + Math.sin(a) * S * 0.3;
+      const drop = 4 + rnd() * 9, wob = sway(i * 1.3, hot) * 8;
+      p.stroke('#6E8F5A'); p.strokeWeight(1.4); p.line(fx, fy, fx + wob, fy + drop);
+      p.noStroke();
+      for (let k = 0; k < 5; k++){ const pa = k / 5 * p.TWO_PI + t * (REDUCED ? 0 : 0.2); p.fill(hexA(z.color, 0.85)); p.circle(fx + wob + Math.cos(pa) * 4.2, fy + drop + Math.sin(pa) * 4.2, 5); }
+      p.fill('#E0A92E'); p.circle(fx + wob, fy + drop, 4);
+    }
+    p.noStroke();
+  }
+  function drawTree(z, hot){
+    const rnd = mulberry32(z.seed);
+    for (let i = -1; i <= 1; i += 2){
+      const bx = i * S * 0.3, h = S * (0.5 + rnd() * 0.15);
+      p.push(); p.translate(bx, 0); p.rotate(sway(i * 2, hot) * 0.5);
+      p.noStroke(); p.fill('#8A6B4A'); p.rect(-3, -h * 0.55, 6, h * 0.55, 3);
+      p.fill(hexA(z.color, 0.8));
+      p.circle(0, -h * 0.72, S * 0.42); p.circle(-S * 0.16, -h * 0.58, S * 0.3); p.circle(S * 0.16, -h * 0.58, S * 0.3);
+      p.fill(hexA('#FFFDF6', 0.5));
+      for (let k = 0; k < 3; k++) p.rect(-S * 0.12 + k * S * 0.1, -h * 0.76 + (k % 2) * 6, 8, 5.5, 1.5); /* 書頁 */
+      p.pop();
+    }
+  }
+  function drawOrchard(z, hot){
+    const rnd = mulberry32(z.seed);
+    for (let i = 0; i < 3; i++){
+      const bx = (i - 1) * S * 0.48, h = S * (0.4 + rnd() * 0.14);
+      p.push(); p.translate(bx, 0); p.rotate(sway(i * 1.7, hot) * 0.4);
+      p.noStroke(); p.fill('#8A6B4A'); p.rect(-2.6, -h * 0.5, 5.2, h * 0.5, 2.5);
+      p.fill(hexA('#5C9A55', 0.85)); p.circle(0, -h * 0.7, S * 0.38);
+      for (let k = 0; k < 5; k++){
+        const a = rnd() * p.TWO_PI, r = rnd() * S * 0.13;
+        p.fill(z.color); p.circle(Math.cos(a) * r, -h * 0.7 + Math.sin(a) * r, 6.5);
+      }
+      p.pop();
+    }
+  }
+  function drawPond(z, hot){
+    p.noStroke(); p.fill(hexA(z.color, 0.3));
+    p.ellipse(0, -S * 0.08, S * 1.35, S * 0.5);
+    p.fill(hexA(z.color, 0.5)); p.ellipse(0, -S * 0.08, S * 1.1, S * 0.38);
+    /* 漣漪 */
+    for (let k = 0; k < 3; k++){
+      const prog = REDUCED ? (k + 1) / 3.5 : ((t * 0.35 + k / 3) % 1);
+      p.noFill(); p.stroke(hexA('#FFFDF6', 0.6 * (1 - prog))); p.strokeWeight(1.6);
+      p.ellipse(0, -S * 0.08, S * 1.1 * prog, S * 0.38 * prog);
+    }
+    p.noStroke();
+    /* 荷葉 */
+    const rnd = mulberry32(z.seed);
+    for (let k = 0; k < 4; k++){
+      const lx = (rnd() - 0.5) * S * 0.9, ly = -S * 0.08 + (rnd() - 0.5) * S * 0.24;
+      p.fill(hexA('#4E9A4A', 0.85)); p.ellipse(lx, ly, 17, 11);
+      p.fill(hexA(z.color, 0.5)); p.triangle(lx, ly, lx + 8, ly - 3, lx + 8, ly + 3);
+    }
+    /* 蘆葦 */
+    for (let k = -1; k <= 1; k += 2){
+      const rx = k * S * 0.62;
+      p.push(); p.translate(rx, 0); p.rotate(sway(k * 3, hot));
+      p.stroke('#7C9A62'); p.strokeWeight(2); p.line(0, 0, 0, -S * 0.42);
+      p.noStroke(); p.fill('#8A6B4A'); p.ellipse(0, -S * 0.42, 6, 15);
+      p.pop();
+    }
+  }
+  function drawCamp(z, hot){
+    /* 帳篷 */
+    p.noStroke(); p.fill(hexA(z.color, 0.9));
+    p.triangle(-S * 0.62, 0, -S * 0.18, 0, -S * 0.4, -S * 0.44);
+    p.fill(hexA('#4d1212', 0.9)); p.triangle(-S * 0.46, 0, -S * 0.34, 0, -S * 0.4, -S * 0.2);
+    /* 柴火 */
+    p.push(); p.translate(S * 0.26, 0);
+    p.fill('#8A6B4A'); p.push(); p.rotate(0.5); p.rect(-13, -3, 26, 6, 3); p.pop(); p.push(); p.rotate(-0.5); p.rect(-13, -3, 26, 6, 3); p.pop();
+    /* 火焰（flicker） */
+    const fl = REDUCED ? 0 : Math.sin(t * 9) * 3 + Math.sin(t * 17) * 2;
+    p.fill(hexA('#C0392B', 0.85)); p.ellipse(0, -14 - fl * 0.4, 17, 26 + fl);
+    p.fill(hexA('#E0A92E', 0.9)); p.ellipse(0, -11 - fl * 0.3, 10, 16 + fl * 0.6);
+    p.fill(hexA('#FFFDF6', 0.85)); p.ellipse(0, -8, 4.5, 7);
+    if (!REDUCED) for (let k = 0; k < 3; k++){ const pr = (t * 0.7 + k / 3) % 1; p.fill(hexA('#E0A92E', 0.7 * (1 - pr))); p.circle(Math.sin((t + k) * 3) * 6, -20 - pr * 34, 3.4); }
+    p.pop();
+  }
+  const FORMS = { sprout: drawSprout, vine: drawVine, trellis: drawTrellis, tree: drawTree, orchard: drawOrchard, pond: drawPond, camp: drawCamp };
+
+  p.draw = () => {
+    t += REDUCED ? 0 : 0.016;
+    p.clear();
+    /* 園間小徑 */
+    p.noFill(); p.stroke('#E0D6BD'); p.strokeWeight(7);
+    p.drawingContext.setLineDash([1, 14]); p.drawingContext.lineCap = 'round';
+    p.beginShape();
+    for (let i = 0; i < anchors.length; i++){ p.curveVertex(anchors[i].x, anchors[i].y + 8); if (i === 0 || i === anchors.length - 1) p.curveVertex(anchors[i].x, anchors[i].y + 8); }
+    p.endShape();
+    p.drawingContext.setLineDash([]);
+    /* 七區植物 */
+    let hov = -1;
+    for (let i = 0; i < ZONES.length; i++){
+      const off = parallax(i);
+      const zx = anchors[i].x + off.dx, zy = anchors[i].y + off.dy;
+      if (p.dist(p.mouseX, p.mouseY, zx, zy - S * 0.3) < S * 0.78) hov = i;
+    }
+    hoverZone = hov;
+    for (let i = 0; i < ZONES.length; i++){
+      const z = ZONES[i], off = parallax(i);
+      const zx = anchors[i].x + off.dx, zy = anchors[i].y + off.dy;
+      const hot = (i === hov || i === activeZone) ? 1 : 0;
+      p.noStroke(); p.fill(26, 22, 19, 22); p.ellipse(zx, zy + 6, S * 1.15, S * 0.2); /* 地影 */
+      if (hot){ p.fill(hexA(z.color, 0.12)); p.circle(zx, zy - S * 0.28, S * 1.5); }
+      p.push(); p.translate(zx, zy); if (hot) p.scale(1.06);
+      FORMS[z.form](z, hot);
+      p.pop();
+    }
+    /* 花粉微粒 */
+    p.noStroke();
+    for (const po of pollen){
+      if (!REDUCED){ po.ph += 0.015; po.y -= po.sp; po.x += Math.sin(po.ph) * 0.4; if (po.y < -8){ po.y = H + 8; po.x = p.random(W); } }
+      p.fill(hexA('#E0A92E', 0.3)); p.circle(po.x, po.y, 4);
+    }
+    /* tooltip */
+    if (hov >= 0 && p.mouseX > 0 && p.mouseX < W && p.mouseY > 0 && p.mouseY < H){
+      const z = ZONES[hov];
+      gTip.innerHTML = '<b>' + z.en + ' · ' + z.count + ' 條議題</b>' + z.topics[0] + '⋯ <span style="opacity:.6">點擊展開</span>';
+      gTip.style.left = Math.min(W - 240, Math.max(8, p.mouseX + 14)) + 'px';
+      gTip.style.top = Math.max(6, p.mouseY - 14) + 'px';
+      gTip.classList.add('is-show');
+      p.cursor(p.HAND);
+    } else { gTip.classList.remove('is-show'); p.cursor(p.ARROW); }
+  };
+  p.mousePressed = () => {
+    if (p.mouseX < 0 || p.mouseX > W || p.mouseY < 0 || p.mouseY > H) return;
+    if (hoverZone >= 0) selectZone(hoverZone);
+  };
+  p.windowResized = () => {
+    W = gStage.clientWidth; H = gStage.clientHeight;
+    p.resizeCanvas(W, H); relayout();
+  };
+});
+
+/* ============================================================
+   02 — 思辨方塊投稿（共用 Brand.deliberationGame + 共用存檔）
+   五分類：焦慮紅 / 工具藍 / 創意黃 / 倫理綠 / 連結紫(待歸類)
+   ============================================================ */
+Brand.mascot(document.getElementById('m-ask'), 'ask');
+Brand.mascot(document.getElementById('m-connect'), 'connect');
+
+Brand.deliberationGame(document.getElementById('tm-game-mount'), {
+  categories: [
+    { id:'anx',  label:'焦慮與心態', color:TC.debate,  shape:'L', re:/怕|擔心|焦慮|淘汰|取代|不安|沒用|落後|來不及|恐懼|壓力/i },
+    { id:'tool', label:'工具與技術', color:TC.listen,  shape:'O', re:/prompt|midjourney|chatgpt|gpt|claude|怎麼用|寫程式|工具|模型|api|自動化|coding|部署|workflow|工作流/i },
+    { id:'idea', label:'創意與應用', color:TC.ask,     shape:'T', re:/點子|創作|企劃|發想|靈感|設計|內容|行銷|文案|品牌|影片/i },
+    { id:'eth',  label:'倫理與未來', color:TC.build,   shape:'I', re:/版權|真實|人類|未來|價值|倫理|法規|道德|隱私|信任|責任|教育|老師/i }
+  ],
+  defaultCat: { id:'misc', label:'連結與其他', color:TC.connect, shape:'S1' },
+  onScore: (s) => {
+    document.getElementById('tm-score').textContent = s;
+    document.getElementById('hero-score').textContent = s;
+  }
+});
+document.getElementById('tm-score').textContent = Brand.state.get().score;
+
+/* ============================================================
+   03 — 議題星圖（node-line 生成藝術）
+   ============================================================ */
+const STARS = [
+  { n:'AI 工作流',   c:TC.listen,  cat:'工具與流程', heat:86, ppl:41, x:.14, y:.36, roles:['build','listen'],
+    d:'把每天重複的事交給 AI：從筆記、排程到報告的全自動流水線，實戰案例最密集的一顆星。' },
+  { n:'AI 自動化',   c:TC.listen,  cat:'工具與流程', heat:78, ppl:33, x:.28, y:.64, roles:['build'],
+    d:'n8n、Zapier、代理人串接的實戰坑與解法。掉過坑的人都在這裡交換地圖。' },
+  { n:'AI 商業導入', c:TC.connect, cat:'商業與連結', heat:72, ppl:29, x:.40, y:.42, roles:['connect','listen'],
+    d:'怎麼讓公司「真的」用起來：成本、內部阻力、與說服老闆的 ROI 語言。' },
+  { n:'AI 創業',     c:TC.connect, cat:'商業與連結', heat:68, ppl:26, x:.30, y:.16, roles:['build','connect'],
+    d:'AI 時代的一人公司與新創，護城河到底在哪？還是根本不需要城？' },
+  { n:'AI 內容',     c:TC.ask,     cat:'創意與內容', heat:81, ppl:37, x:.52, y:.26, roles:['ask','debate'],
+    d:'量產與靈魂之間：AI 內容的品質、風格與識別度，創作者最愛吵的一顆星。' },
+  { n:'AI 品牌',     c:TC.ask,     cat:'創意與內容', heat:59, ppl:21, x:.64, y:.52, roles:['connect','ask'],
+    d:'品牌語氣能外包給 AI 嗎？一致性與人味之間的永恆拉鋸。' },
+  { n:'AI 教育',     c:TC.build,   cat:'倫理與教育', heat:74, ppl:30, x:.52, y:.74, roles:['listen','build'],
+    d:'當 AI 什麼都會答，老師與學校還教什麼？教室內外都在重新洗牌。' },
+  { n:'AI 倫理',     c:TC.build,   cat:'倫理與教育', heat:76, ppl:31, x:.74, y:.24, roles:['debate','build'],
+    d:'版權、真實性、偏見：生成內容的良心邊界，每次討論都會長出新的問題。' },
+  { n:'AI 法規',     c:TC.build,   cat:'倫理與教育', heat:52, ppl:17, x:.86, y:.46, roles:['listen','debate'],
+    d:'各國 AI 法案追蹤與落地影響。冷門但重要，適合喜歡讀條文的深潛者。' },
+  { n:'AI 個人焦慮', c:TC.debate,  cat:'心態與焦慮', heat:92, ppl:48, x:.78, y:.74, roles:['debate','listen'],
+    d:'「我會被取代嗎？」全站最熱的一顆星。每一場派對都有人帶著它進場，也有人帶著新的答案離開。' }
+];
+const EDGES = [[0,1],[0,2],[1,2],[2,3],[3,5],[4,5],[4,3],[4,7],[7,8],[7,9],[6,9],[6,4],[0,9]];
+
+const sStage = document.getElementById('star-stage');
+const sTip = document.getElementById('s-tip');
+let activeStar = 9;
+
+function selectStar(i){
+  activeStar = i;
+  const s = STARS[i];
+  const panel = document.getElementById('star-detail');
+  panel.style.setProperty('--sc', s.c);
+  document.getElementById('sd-cat').textContent = '— ' + s.cat;
+  document.getElementById('sd-name').textContent = s.n;
+  document.getElementById('sd-desc').textContent = s.d;
+  document.getElementById('sd-bar').style.width = s.heat + '%';
+  document.getElementById('sd-heat').textContent = s.heat;
+  document.getElementById('sd-ppl').textContent = s.ppl;
+  const rBox = document.getElementById('sd-roles');
+  rBox.innerHTML = '';
+  s.roles.forEach((r) => {
+    const m = Brand.mascotMeta[r];
+    const el = document.createElement('span');
+    el.className = 'chip';
+    el.innerHTML = '<span class="chip__dot" style="background:' + m.color + '"></span>適合' + m.name;
+    rBox.appendChild(el);
+  });
+}
+selectStar(9);
+
+Brand.onView(sStage, () => (p) => {
+  let W, H, t = 0, dust = [];
+  const nx = (s) => s.x * W, ny = (s, i) => s.y * H + (REDUCED ? 0 : Math.sin(t * 1.2 + i * 1.7) * 5);
+  const nr = (s) => 7 + s.heat * 0.16;
+
+  p.setup = () => {
+    W = sStage.clientWidth; H = sStage.clientHeight;
+    const c = p.createCanvas(W, H); c.parent('star-canvas');
+    p.pixelDensity(Math.min(window.devicePixelRatio || 1, 1.5));
+    p.textFont('IBM Plex Mono'); p.textAlign(p.CENTER, p.CENTER);
+    const n = W < 720 ? 34 : 64;
+    for (let i = 0; i < n; i++) dust.push({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.7 + 0.6, tw: Math.random() * 6.28 });
+  };
+  p.draw = () => {
+    t += REDUCED ? 0 : 0.016;
+    p.clear();
+    /* 星塵 */
+    p.noStroke();
+    for (const d of dust){ d.tw += 0.03; const a = 90 + Math.sin(d.tw) * 70; p.fill(243, 238, 226, REDUCED ? 90 : a); p.circle(d.x, d.y, d.r); }
+    /* 連線 */
+    let hov = -1;
+    for (let i = 0; i < STARS.length; i++) if (p.dist(p.mouseX, p.mouseY, nx(STARS[i]), ny(STARS[i], i)) < nr(STARS[i]) + 12) hov = i;
+    for (const e of EDGES){
+      const A = STARS[e[0]], B = STARS[e[1]];
+      const lit = (e[0] === hov || e[1] === hov || e[0] === activeStar || e[1] === activeStar);
+      p.stroke(lit ? hexA('#E0A92E', 0.75) : 'rgba(233,225,210,0.16)');
+      p.strokeWeight(lit ? 1.8 : 1);
+      p.line(nx(A), ny(A, e[0]), nx(B), ny(B, e[1]));
+      if (lit && !REDUCED){ /* 流光粒子 */
+        const pr = (t * 0.5 + e[0] * 0.13) % 1;
+        p.noStroke(); p.fill('#E0A92E');
+        p.circle(p.lerp(nx(A), nx(B), pr), p.lerp(ny(A, e[0]), ny(B, e[1]), pr), 3.4);
+      }
+    }
+    /* 節點 */
+    for (let i = 0; i < STARS.length; i++){
+      const s = STARS[i], x = nx(s), y = ny(s, i), r = nr(s);
+      const lit = (i === hov || i === activeStar);
+      p.noStroke();
+      for (let g = 3; g >= 1; g--){ p.fill(hexA(s.c, lit ? 0.11 : 0.06)); p.circle(x, y, r * 2 + g * 11); }
+      p.fill(s.c); p.circle(x, y, r * 2);
+      p.fill(255, 253, 246, 210); p.circle(x - r * 0.3, y - r * 0.3, r * 0.55);
+      if (i === activeStar){ p.noFill(); p.stroke('#FFFDF6'); p.strokeWeight(1.4); p.circle(x, y, r * 2 + 9 + (REDUCED ? 0 : Math.sin(t * 3) * 2)); }
+      p.noStroke(); p.fill(243, 238, 226, lit ? 255 : 175); p.textSize(Math.max(9, Math.min(11.5, W * 0.012)));
+      p.text(s.n, x, y + r + 15);
+    }
+    /* tooltip + cursor */
+    if (hov >= 0 && p.mouseX > 0 && p.mouseX < W && p.mouseY > 0 && p.mouseY < H){
+      const s = STARS[hov];
+      sTip.innerHTML = '<b>' + s.cat + ' · HEAT ' + s.heat + '</b>' + s.n + ' — ' + s.ppl + ' 人認領';
+      sTip.style.left = Math.min(W - 200, Math.max(8, p.mouseX + 14)) + 'px';
+      sTip.style.top = Math.max(6, p.mouseY - 12) + 'px';
+      sTip.classList.add('is-show'); p.cursor(p.HAND);
+    } else { sTip.classList.remove('is-show'); p.cursor(p.ARROW); }
+    p._hov = hov;
+  };
+  p.mousePressed = () => {
+    if (p.mouseX < 0 || p.mouseX > W || p.mouseY < 0 || p.mouseY > H) return;
+    if (p._hov >= 0){
+      selectStar(p._hov);
+      flashTopicCard(STARS[p._hov].n);
+    }
+  };
+  p.windowResized = () => { W = sStage.clientWidth; H = sStage.clientHeight; p.resizeCanvas(W, H); };
+});
+
+/* 星圖點擊 → 對應熱門議題卡閃一下 */
+function flashTopicCard(starName){
+  const map = { 'AI 個人焦慮':'AI 個人焦慮', 'AI 工作流':'一人公司工作流', 'AI 自動化':'一人公司工作流', 'AI 內容':'AI 內容倫理', 'AI 倫理':'AI 內容倫理', 'AI 品牌':'AI 個人品牌', 'AI 教育':'AI 教育現場' };
+  const key = map[starName];
+  if (!key) return;
+  const card = document.querySelector('.topic-card[data-topic="' + key + '"]');
+  if (!card) return;
+  card.classList.remove('is-flash');
+  void card.offsetWidth;
+  card.classList.add('is-flash');
+}
+
+/* hero 種子數：微幅跳動的假 live 數 */
+(() => {
+  const el = document.getElementById('hero-seeds');
+  if (REDUCED) return;
+  let n = 182;
+  const tick = () => { n = Math.max(170, Math.min(214, n + Math.round((Math.random() - 0.35) * 3))); el.textContent = n; setTimeout(tick, 2400 + Math.random() * 3000); };
+  tick();
+})();
+</script>
+</body>
+</html>

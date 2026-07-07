@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>議題採集隊 — AI 思辨派對社群頁</title>
+<meta name="description" content="派出你的採集隊，在 AI 議題園裡採集問題、交換觀點、完成任務。認識五隻採集隊思辨獸與思辨獸型態圖鑑 Discourse Dex。">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Fredoka:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/brand.css">
+
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+
+<style>
+/* ============================================================
+   community 頁面特有樣式（元件皆沿用 brand.css）
+   ============================================================ */
+:root{ --c-deep:#274B63; } /* 圖鑑第五型態：深潛藍黑（僅本頁使用） */
+
+.sec-head{max-width:56ch;margin-bottom:14px;}
+.sec-head .eyebrow{display:block;margin-bottom:12px;}
+.sec-head .lead{margin-top:10px;}
+
+/* ---------- HERO ---------- */
+.hero{position:relative;padding-block:calc(var(--nav-h) + 72px) 84px;overflow:hidden;}
+#hero-canvas{position:absolute;inset:0;z-index:0;}
+#hero-canvas canvas{display:block;}
+.hero__grid{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:40px;align-items:center;}
+.hero__title{margin:14px 0 20px;}
+.hero__actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px;}
+.hero__aside{display:flex;flex-direction:column;gap:16px;align-items:flex-start;}
+.hero__parade{display:flex;flex-wrap:wrap;gap:2px;}
+.hero__parade .mascot{width:62px;height:76px;}
+
+/* ---------- 採集隊角色卡 ---------- */
+.crew-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;margin-top:44px;align-items:start;}
+.crew-card{
+  --tc:var(--red);position:relative;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--radius-lg);box-shadow:var(--soft-sm);overflow:hidden;
+  transition:transform .2s cubic-bezier(.34,1.5,.6,1),box-shadow .2s,border-color .2s;
+}
+.crew-card::before{content:"";display:block;height:6px;background:var(--tc);}
+.crew-card:hover{transform:translateY(-6px);box-shadow:var(--soft);border-color:var(--tc);}
+.crew-card:hover .mascot{animation:qpop .55s cubic-bezier(.34,1.56,.64,1);}
+@keyframes qpop{
+  0%{transform:scale(1) translateY(0);}
+  35%{transform:scale(1.12,.88) translateY(3px);}
+  70%{transform:scale(.94,1.1) translateY(-7px);}
+  100%{transform:scale(1) translateY(0);}
+}
+.crew-card__head{
+  width:100%;background:none;border:none;display:flex;flex-direction:column;align-items:center;
+  gap:4px;padding:20px 16px 18px;text-align:center;color:inherit;
+}
+.crew-card .mascot{width:94px;height:112px;}
+.crew-card__zh{font-family:var(--font-display);font-weight:900;font-size:1.45rem;line-height:1.2;margin-top:4px;}
+.crew-card__en{font-family:var(--font-mono);font-size:.68rem;letter-spacing:.16em;color:var(--red);text-transform:uppercase;}
+.crew-card__skill{margin-top:10px;}
+.crew-card__skill .chip__dot{background:var(--tc);}
+.crew-card__more{
+  margin-top:12px;font-family:var(--font-mono);font-size:.64rem;letter-spacing:.12em;
+  color:var(--ink-soft);display:inline-flex;align-items:center;gap:6px;text-transform:uppercase;
+}
+.crew-card__more::after{content:"＋";font-size:.85rem;transition:transform .25s;}
+.crew-card.is-open .crew-card__more::after{transform:rotate(45deg);}
+.crew-card__body{padding:16px 18px 20px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:14px;font-size:.9rem;line-height:1.65;color:var(--ink-soft);}
+.crew-card__body[hidden]{display:none;}
+.crew-card__label{
+  display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.62rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:5px;
+}
+.crew-card__label::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--tc);}
+.quest-box{background:var(--paper-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--ink);}
+.evo{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.68rem;}
+.evo b{font-weight:500;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:3px 8px;white-space:nowrap;}
+.evo b:last-of-type{border-color:var(--tc);box-shadow:inset 0 -2px 0 var(--tc);}
+.evo i{font-style:normal;opacity:.5;}
+.quest-done{
+  border:none;border-radius:12px;background:var(--tc);color:#FFFDF6;font-family:var(--font-body);
+  font-weight:600;font-size:.85rem;padding:10px 14px;box-shadow:0 3px 0 rgba(26,22,19,.35);
+  transition:transform .13s,box-shadow .13s;
+}
+.crew-card[data-type="ask"] .quest-done{color:#1A1613;}
+.quest-done:hover{transform:translateY(-2px);box-shadow:0 5px 0 rgba(26,22,19,.35);}
+.quest-done:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(26,22,19,.35);}
+.quest-done:disabled{background:var(--paper-2);color:var(--ink-soft);box-shadow:none;cursor:default;transform:none;border:1px dashed var(--line);}
+
+/* ---------- 思辨獸型態圖鑑 Dex ---------- */
+.dex{background:var(--paper-2);}
+.dex-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px;}
+.dex-card{
+  --tc:var(--red);background:var(--card);border:1px solid var(--line);border-top:6px solid var(--tc);
+  border-radius:var(--radius-lg);box-shadow:var(--soft-sm);padding:24px;
+  display:flex;flex-direction:column;gap:14px;transition:transform .2s,box-shadow .2s;
+}
+.dex-card:hover{transform:translateY(-6px);box-shadow:var(--soft);}
+.dex-card__top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.dex-card__zh{font-family:var(--font-display);font-weight:900;font-size:1.55rem;line-height:1.15;}
+.dex-card__no{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.14em;color:var(--ink-soft);}
+.dex-card .badge{background:var(--tc);}
+.dex-card__quote{
+  font-family:var(--font-display);font-weight:700;font-size:1.08rem;line-height:1.55;color:var(--ink);
+  border-left:4px solid var(--tc);padding-left:12px;
+}
+.dex-card__traits{list-style:none;display:flex;flex-direction:column;gap:6px;font-size:.88rem;color:var(--ink-soft);}
+.dex-card__traits li{display:flex;gap:8px;align-items:baseline;}
+.dex-card__traits li::before{content:"";flex:none;width:8px;height:8px;border-radius:2px;background:var(--tc);transform:translateY(1px);}
+.dex-card__radar{margin-top:auto;display:flex;justify-content:center;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:8px;}
+.dex-card__radar canvas{display:block;}
+.hybrid{margin-top:48px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--soft-sm);padding:26px 28px;}
+.hybrid__title{font-family:var(--font-display);font-weight:900;font-size:1.25rem;margin-bottom:6px;}
+.hybrid__desc{color:var(--ink-soft);font-size:.92rem;margin-bottom:16px;}
+.hybrid__chips{display:flex;flex-wrap:wrap;gap:10px;}
+.hybrid__chips .chip{padding:9px 16px;font-size:.9rem;}
+.hybrid__en{font-size:.66rem;letter-spacing:.1em;color:var(--ink-soft);margin-left:2px;}
+
+/* ---------- 你會遇到誰 ---------- */
+.people-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px;}
+.people-grid .mission-card{padding:28px 24px;}
+.people-grid .mission-card__icon{width:60px;height:60px;font-size:1.7rem;margin-bottom:16px;}
+.people-grid .mission-card__zh{font-size:1.4rem;line-height:1.3;}
+.people-grid .mission-card__en{font-size:.72rem;margin:8px 0 10px;}
+.people-grid .mission-card__desc{font-size:.92rem;}
+
+/* ---------- 社群守則便利貼 ---------- */
+.rules{background:var(--paper-2);overflow:hidden;}
+.rules-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:24px;margin-top:60px;}
+.rules .note{min-height:230px;transform:translate(var(--dx,0px),var(--dy,0px)) rotate(var(--note-rot));}
+.rules .note:hover{animation:none;box-shadow:0 14px 30px rgba(40,30,20,.22);}
+.rules .note.is-drag{animation:none!important;cursor:grabbing;z-index:6;box-shadow:0 18px 38px rgba(40,30,20,.3);}
+.rules .note .note__title{font-size:1.25rem;}
+.rules .note .note__desc{font-size:.86rem;}
+.rules__hint{margin-top:28px;text-align:center;font-family:var(--font-mono);font-size:.7rem;letter-spacing:.1em;color:var(--ink-soft);}
+@media (pointer:fine){.rules .note{cursor:grab;touch-action:none;user-select:none;}}
+
+/* ---------- 品牌金句 ---------- */
+.quote-sec .quote-card{
+  max-width:720px;margin-inline:auto;text-align:center;border-left:5px solid var(--red);
+  font-size:clamp(1.35rem,2.6vw,1.8rem);padding:38px 34px;
+}
+.quote-sec .quote-card small{
+  display:block;margin-top:14px;font-family:var(--font-mono);font-weight:400;font-size:.68rem;
+  letter-spacing:.18em;color:var(--ink-soft);
+}
+
+/* ---------- RWD 860 / 560 ---------- */
+@media (max-width:860px){
+  .hero__grid{grid-template-columns:1fr;gap:26px;}
+  .hero__aside{flex-direction:row;flex-wrap:wrap;align-items:center;}
+  .crew-grid{grid-template-columns:repeat(2,1fr);}
+  .dex-grid{grid-template-columns:1fr;}
+  .people-grid{grid-template-columns:repeat(2,1fr);}
+  .rules-grid{grid-template-columns:repeat(2,1fr);gap:30px 22px;}
+}
+@media (max-width:560px){
+  .crew-grid{grid-template-columns:1fr;}
+  .people-grid{grid-template-columns:1fr;}
+  .rules-grid{grid-template-columns:1fr;gap:34px;}
+}
+
+/* ---------- 降級 ---------- */
+@media (prefers-reduced-motion:reduce){
+  .crew-card:hover .mascot{animation:none;}
+  .crew-card:hover,.dex-card:hover{transform:none;}
+  .crew-card__more::after{transition:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ======= HERO ======= -->
+<header class="hero bg-grid">
+  <div id="hero-canvas" aria-hidden="true"></div>
+  <div class="container hero__grid">
+    <div>
+      <span class="eyebrow">DISCOURSE FORAGERS</span>
+      <h1 class="display display--xl hero__title">議題<span class="underline-mark">採集隊</span></h1>
+      <p class="lead">派出你的採集隊，在 AI 議題園裡採集問題、交換觀點、完成任務。</p>
+      <div class="hero__actions">
+        <a href="#crew"><button class="btn btn--primary">🧺 認識你的採集隊</button></a>
+        <a href="#dex"><button class="btn btn--ghost">📖 打開型態圖鑑</button></a>
+      </div>
+    </div>
+    <aside class="hero__aside">
+      <div class="hud"><span class="hud__icon">🍃</span><div><div class="hud__num" id="hud-score">0</div><div class="hud__label">採集分數</div></div></div>
+      <div class="hud"><span class="hud__icon">🔓</span><div><div class="hud__num" id="hud-unlock">0 / 5</div><div class="hud__label">已解鎖型態</div></div></div>
+      <div class="hero__parade" aria-hidden="true">
+        <span data-mascot="ask"></span><span data-mascot="listen"></span><span data-mascot="debate"></span><span data-mascot="build"></span><span data-mascot="connect"></span>
+      </div>
+    </aside>
+  </div>
+</header>
+
+<!-- ======= 五隻採集隊角色 ======= -->
+<section class="section" id="crew">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">FORAGER CREW · 五隻採集獸</span>
+      <h2 class="display display--lg">你的<span class="underline-mark">採集隊</span>成員</h2>
+      <p class="lead">每一隻思辨獸擅長一種採集：提問、傾聽、辯證、實作、連結。點開卡片看牠的個性、今日任務與進化方向——完成任務就能替牠解鎖型態。</p>
+    </div>
+    <div class="crew-grid">
+
+      <article class="crew-card" data-type="ask" style="--tc:var(--c-ask)">
+        <button class="crew-card__head" type="button" aria-expanded="false" aria-controls="crew-body-ask">
+          <span data-mascot="ask"></span>
+          <span class="crew-card__zh">問問獸</span>
+          <span class="crew-card__en">Questionling</span>
+          <span class="chip crew-card__skill"><span class="chip__dot"></span>發現問題 · 提問</span>
+          <span class="crew-card__more">展開檔案</span>
+        </button>
+        <div class="crew-card__body" id="crew-body-ask" hidden>
+          <div><span class="crew-card__label">個性 Personality</span>好奇心過剩，看到任何事都先冒出三個問號，最怕全場都說「沒問題」。</div>
+          <div class="quest-box"><span class="crew-card__label">今日任務 Today's Quest</span>寫下一個真正卡住你的問題。</div>
+          <div><span class="crew-card__label">進化方向 Evolution</span>
+            <span class="evo"><b>問號芽</b><i>→</i><b>追問花</b><i>→</i><b>問題雷達獸</b></span>
+          </div>
+          <button class="quest-done" type="button" data-type="ask">✔ 完成任務 · 採集 +1</button>
+        </div>
+      </article>
+
+      <article class="crew-card" data-type="listen" style="--tc:var(--c-listen)">
+        <button class="crew-card__head" type="button" aria-expanded="false" aria-controls="crew-body-listen">
+          <span data-mascot="listen"></span>
+          <span class="crew-card__zh">聽聽獸</span>
+          <span class="crew-card__en">Listenling</span>
+          <span class="chip crew-card__skill"><span class="chip__dot"></span>接住觀點 · 傾聽</span>
+          <span class="crew-card__more">展開檔案</span>
+        </button>
+        <div class="crew-card__body" id="crew-body-listen" hidden>
+          <div><span class="crew-card__label">個性 Personality</span>耳朵永遠比嘴巴快，聽得出你話裡沒說完的那一半。</div>
+          <div class="quest-box"><span class="crew-card__label">今日任務 Today's Quest</span>記錄一句你從別人那聽到的觀點。</div>
+          <div><span class="crew-card__label">進化方向 Evolution</span>
+            <span class="evo"><b>共鳴耳</b><i>→</i><b>回聲花</b><i>→</i><b>觀點接收獸</b></span>
+          </div>
+          <button class="quest-done" type="button" data-type="listen">✔ 完成任務 · 採集 +1</button>
+        </div>
+      </article>
+
+      <article class="crew-card" data-type="debate" style="--tc:var(--c-debate)">
+        <button class="crew-card__head" type="button" aria-expanded="false" aria-controls="crew-body-debate">
+          <span data-mascot="debate"></span>
+          <span class="crew-card__zh">辨辨獸</span>
+          <span class="crew-card__en">Debateling</span>
+          <span class="chip crew-card__skill"><span class="chip__dot"></span>拆解矛盾 · 辯證</span>
+          <span class="crew-card__more">展開檔案</span>
+        </button>
+        <div class="crew-card__body" id="crew-body-debate" hidden>
+          <div><span class="crew-card__label">個性 Personality</span>溫柔的挑戰者：不吵架、只拆架，最愛問「這個結論的前提是什麼？」</div>
+          <div class="quest-box"><span class="crew-card__label">今日任務 Today's Quest</span>找出一個觀點背後的假設。</div>
+          <div><span class="crew-card__label">進化方向 Evolution</span>
+            <span class="evo"><b>分岔角</b><i>→</i><b>邏輯刃</b><i>→</i><b>問題解剖獸</b></span>
+          </div>
+          <button class="quest-done" type="button" data-type="debate">✔ 完成任務 · 採集 +1</button>
+        </div>
+      </article>
+
+      <article class="crew-card" data-type="build" style="--tc:var(--c-build)">
+        <button class="crew-card__head" type="button" aria-expanded="false" aria-controls="crew-body-build">
+          <span data-mascot="build"></span>
+          <span class="crew-card__zh">做做獸</span>
+          <span class="crew-card__en">Buildling</span>
+          <span class="chip crew-card__skill"><span class="chip__dot"></span>轉成行動 · 實作</span>
+          <span class="crew-card__more">展開檔案</span>
+        </button>
+        <div class="crew-card__body" id="crew-body-build" hidden>
+          <div><span class="crew-card__label">個性 Personality</span>手比腦快，討論還沒結束就開好共筆，相信原型勝過雄辯。</div>
+          <div class="quest-box"><span class="crew-card__label">今日任務 Today's Quest</span>寫下一個回家可做的行動。</div>
+          <div><span class="crew-card__label">進化方向 Evolution</span>
+            <span class="evo"><b>工具手</b><i>→</i><b>流程藤</b><i>→</i><b>原型建造獸</b></span>
+          </div>
+          <button class="quest-done" type="button" data-type="build">✔ 完成任務 · 採集 +1</button>
+        </div>
+      </article>
+
+      <article class="crew-card" data-type="connect" style="--tc:var(--c-connect)">
+        <button class="crew-card__head" type="button" aria-expanded="false" aria-controls="crew-body-connect">
+          <span data-mascot="connect"></span>
+          <span class="crew-card__zh">連連獸</span>
+          <span class="crew-card__en">Linkling</span>
+          <span class="chip crew-card__skill"><span class="chip__dot"></span>串聯人脈 · 連結</span>
+          <span class="crew-card__more">展開檔案</span>
+        </button>
+        <div class="crew-card__body" id="crew-body-connect" hidden>
+          <div><span class="crew-card__label">個性 Personality</span>天生的節點，記得誰在做什麼，總能在對的時刻說「你們兩個應該認識」。</div>
+          <div class="quest-box"><span class="crew-card__label">今日任務 Today's Quest</span>介紹兩個人認識，或加入一個陌生討論圈。</div>
+          <div><span class="crew-card__label">進化方向 Evolution</span>
+            <span class="evo"><b>節點尾</b><i>→</i><b>共創藤</b><i>→</i><b>社群召集獸</b></span>
+          </div>
+          <button class="quest-done" type="button" data-type="connect">✔ 完成任務 · 採集 +1</button>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ======= 思辨獸型態圖鑑 Discourse Dex ======= -->
+<section class="section dex" id="dex">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">DISCOURSE DEX · 型態圖鑑</span>
+      <h2 class="display display--lg">思辨獸<span class="underline-mark">型態圖鑑</span></h2>
+      <p class="lead">在派對裡待久了，你的思辨獸會長出自己的形狀。五大主型態，各有一張能力雷達——看看你最像哪一種。</p>
+    </div>
+    <div class="dex-grid">
+
+      <article class="dex-card" style="--tc:var(--c-ask)">
+        <div class="dex-card__top">
+          <div>
+            <div class="dex-card__no">DEX NO.01</div>
+            <h3 class="dex-card__zh">探索獸</h3>
+          </div>
+          <span class="badge">EXPLORER</span>
+        </div>
+        <p class="dex-card__quote">「你總是先看見新的問題。」</p>
+        <ul class="dex-card__traits">
+          <li>開場白通常是「欸，你們有沒有想過⋯」</li>
+          <li>筆記本裡問題永遠比答案多</li>
+          <li>容易被下一個新議題吸走</li>
+        </ul>
+        <div class="dex-card__radar">
+          <canvas class="dex-radar" data-values="0.95,0.6,0.5,0.55,0.7" data-color="#E0A92E" role="img" aria-label="探索獸能力雷達：提問最強"></canvas>
+        </div>
+      </article>
+
+      <article class="dex-card" style="--tc:var(--c-debate)">
+        <div class="dex-card__top">
+          <div>
+            <div class="dex-card__no">DEX NO.02</div>
+            <h3 class="dex-card__zh">拆解獸</h3>
+          </div>
+          <span class="badge">ANALYST</span>
+        </div>
+        <p class="dex-card__quote">「你擅長把混亂拆成結構。」</p>
+        <ul class="dex-card__traits">
+          <li>聽到論點先找前提，再找漏洞</li>
+          <li>白板上永遠有一張框架圖</li>
+          <li>口頭禪：「等等，我們先定義一下」</li>
+        </ul>
+        <div class="dex-card__radar">
+          <canvas class="dex-radar" data-values="0.65,0.5,0.95,0.6,0.4" data-color="#C0392B" role="img" aria-label="拆解獸能力雷達：拆解最強"></canvas>
+        </div>
+      </article>
+
+      <article class="dex-card" style="--tc:var(--c-connect)">
+        <div class="dex-card__top">
+          <div>
+            <div class="dex-card__no">DEX NO.03</div>
+            <h3 class="dex-card__zh">共鳴獸</h3>
+          </div>
+          <span class="badge">CONNECTOR</span>
+        </div>
+        <p class="dex-card__quote">「你讓不同的人和想法開始流動。」</p>
+        <ul class="dex-card__traits">
+          <li>記得每個人剛剛說過什麼</li>
+          <li>擅長把 A 的問題接給 B 的經驗</li>
+          <li>散場之後大家都互加了好友</li>
+        </ul>
+        <div class="dex-card__radar">
+          <canvas class="dex-radar" data-values="0.55,0.85,0.4,0.5,0.95" data-color="#7E5AA8" role="img" aria-label="共鳴獸能力雷達：連結最強"></canvas>
+        </div>
+      </article>
+
+      <article class="dex-card" style="--tc:var(--c-build)">
+        <div class="dex-card__top">
+          <div>
+            <div class="dex-card__no">DEX NO.04</div>
+            <h3 class="dex-card__zh">實作獸</h3>
+          </div>
+          <span class="badge">BUILDER</span>
+        </div>
+        <p class="dex-card__quote">「你把靈感變成可以運作的東西。」</p>
+        <ul class="dex-card__traits">
+          <li>討論到一半就默默開好文件</li>
+          <li>口頭禪：「這可以做成一個小工具」</li>
+          <li>下一場派對會帶著原型回來</li>
+        </ul>
+        <div class="dex-card__radar">
+          <canvas class="dex-radar" data-values="0.5,0.55,0.6,0.95,0.6" data-color="#4E9A4A" role="img" aria-label="實作獸能力雷達：實作最強"></canvas>
+        </div>
+      </article>
+
+      <article class="dex-card" style="--tc:var(--c-deep)">
+        <div class="dex-card__top">
+          <div>
+            <div class="dex-card__no">DEX NO.05</div>
+            <h3 class="dex-card__zh">深潛獸</h3>
+          </div>
+          <span class="badge">DEEP DIVER</span>
+        </div>
+        <p class="dex-card__quote">「你會追問到問題真正的底層。」</p>
+        <ul class="dex-card__traits">
+          <li>同一個問題可以連問五層為什麼</li>
+          <li>安靜，但一開口就直達底層</li>
+          <li>討論結束了，還在想那個問題</li>
+        </ul>
+        <div class="dex-card__radar">
+          <canvas class="dex-radar" data-values="0.85,0.9,0.8,0.45,0.4" data-color="#274B63" role="img" aria-label="深潛獸能力雷達：傾聽與提問最強"></canvas>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="hybrid">
+      <h3 class="hybrid__title">混合型態 Hybrid Forms</h3>
+      <p class="hybrid__desc">大多數人不只一種型態。當兩種能力一起長大，就會演化出更稀有的混合型態——</p>
+      <div class="hybrid__chips">
+        <span class="chip"><span class="chip__dot" style="background:var(--c-ask)"></span><span class="chip__dot" style="background:var(--c-build)"></span>原型探險家<span class="mono hybrid__en">EXPLORER × BUILDER</span></span>
+        <span class="chip"><span class="chip__dot" style="background:var(--c-debate)"></span><span class="chip__dot" style="background:var(--c-deep)"></span>問題解剖師<span class="mono hybrid__en">ANALYST × DEEP DIVER</span></span>
+        <span class="chip"><span class="chip__dot" style="background:var(--c-connect)"></span><span class="chip__dot" style="background:var(--c-build)"></span>共創召集人<span class="mono hybrid__en">CONNECTOR × BUILDER</span></span>
+        <span class="chip"><span class="chip__dot" style="background:var(--c-ask)"></span><span class="chip__dot" style="background:var(--c-connect)"></span>靈感引路人<span class="mono hybrid__en">EXPLORER × CONNECTOR</span></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= 你會遇到誰 ======= -->
+<section class="section" id="people">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">WHO YOU'LL MEET · 同桌的人</span>
+      <h2 class="display display--lg">你會<span class="underline-mark">遇到誰</span></h2>
+      <p class="lead">議題園裡沒有講者與聽眾，只有六種帶著不同問題進場的人。</p>
+    </div>
+    <div class="people-grid">
+      <article class="mission-card">
+        <div class="mission-card__icon">🛠️</div>
+        <h3 class="mission-card__zh">已經在用 AI 的人</h3>
+        <div class="mission-card__en">DAILY PRACTITIONERS</div>
+        <p class="mission-card__desc">想找到同樣把 AI 當日常工具的同類，交換工作流、踩雷心得與私藏 prompt。</p>
+      </article>
+      <article class="mission-card">
+        <div class="mission-card__icon">🧭</div>
+        <h3 class="mission-card__zh">導入 AI 的品牌方</h3>
+        <div class="mission-card__en">BRAND ADOPTERS</div>
+        <p class="mission-card__desc">想知道別人怎麼真的落地。不想再聽推銷簡報，只想聽第一線的真話。</p>
+      </article>
+      <article class="mission-card">
+        <div class="mission-card__icon">🌧️</div>
+        <h3 class="mission-card__zh">對 AI 焦慮的工作者</h3>
+        <div class="mission-card__en">ANXIOUS PROFESSIONALS</div>
+        <p class="mission-card__desc">擔心被取代、不知道從哪學起。需要一張能安心問「笨問題」的桌子。</p>
+      </article>
+      <article class="mission-card">
+        <div class="mission-card__icon">✏️</div>
+        <h3 class="mission-card__zh">教育者與內容創作者</h3>
+        <div class="mission-card__en">EDUCATORS &amp; CREATORS</div>
+        <p class="mission-card__desc">正在思考 AI 如何改寫教與學、創作與原創性的邊界，想聽更多立場。</p>
+      </article>
+      <article class="mission-card">
+        <div class="mission-card__icon">🚀</div>
+        <h3 class="mission-card__zh">創業者與自由工作者</h3>
+        <div class="mission-card__en">FOUNDERS &amp; FREELANCERS</div>
+        <p class="mission-card__desc">用最小資源撬動最大槓桿。AI 是隊友也是賭注，想找一起下注的人。</p>
+      </article>
+      <article class="mission-card">
+        <div class="mission-card__icon">❓</div>
+        <h3 class="mission-card__zh">喜歡提問的人</h3>
+        <div class="mission-card__en">BORN QUESTIONERS</div>
+        <p class="mission-card__desc">沒有特定目的，純粹喜歡好問題，和願意認真回答問題的人。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======= 社群守則（入場貼紙）======= -->
+<section class="section rules" id="rules">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">HOUSE RULES · 入場貼紙</span>
+      <h2 class="display display--lg">進場前，先貼上<span class="underline-mark">這五張</span></h2>
+      <p class="lead">五條守則，讓每一張桌子都安全、誠實、好玩。</p>
+    </div>
+    <div class="rules-grid">
+      <div class="note" style="--note-bg:var(--c-ask);--note-rot:-3deg;">
+        <span class="pin"></span><span class="note__step">RULE 01</span>
+        <h3 class="note__title">帶問題，不帶優越感</h3>
+        <p class="note__desc">你的問題是入場券，不是誰比誰懂的比賽。</p>
+      </div>
+      <div class="note" style="--note-bg:var(--c-listen);--note-rot:2deg;color:#FBF6EA;">
+        <span class="pin"></span><span class="note__step">RULE 02</span>
+        <h3 class="note__title">可以懷疑，但要願意聽</h3>
+        <p class="note__desc">質疑一個觀點之前，先把它完整聽完。</p>
+      </div>
+      <div class="note" style="--note-bg:var(--c-debate);--note-rot:-2deg;color:#FBF6EA;">
+        <span class="pin"></span><span class="note__step">RULE 03</span>
+        <h3 class="note__title">不搶答案，先拆問題</h3>
+        <p class="note__desc">好的討論從「這題到底在問什麼」開始。</p>
+      </div>
+      <div class="note" style="--note-bg:var(--c-build);--note-rot:3deg;">
+        <span class="pin"></span><span class="note__step">RULE 04</span>
+        <h3 class="note__title">不推銷，先交流</h3>
+        <p class="note__desc">名片放口袋，故事先上桌。</p>
+      </div>
+      <div class="note" style="--note-bg:var(--c-connect);--note-rot:-4deg;color:#FBF6EA;">
+        <span class="pin"></span><span class="note__step">RULE 05</span>
+        <h3 class="note__title">不裝懂，也不怕問</h3>
+        <p class="note__desc">「我不知道」是這裡最強的開場白。</p>
+      </div>
+    </div>
+    <p class="rules__hint">✋ 這些貼紙可以拖曳——就像進場時你會把它貼在自己身上。</p>
+  </div>
+</section>
+
+<!-- ======= 品牌金句 ======= -->
+<section class="section quote-sec">
+  <div class="container">
+    <blockquote class="quote-card">
+      「每一次思辨，都讓你的角色長出新的形狀。」
+      <small>AI DISCOURSE PARTY · DISCOURSE FORAGERS</small>
+    </blockquote>
+  </div>
+</section>
+
+<script src="assets/brand.js"></script>
+<script>
+Brand.initChrome('community');
+
+(function () {
+  'use strict';
+  var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var FIVE = ['ask', 'listen', 'debate', 'build', 'connect'];
+
+  /* ---------- 吉祥物注入 ---------- */
+  document.querySelectorAll('[data-mascot]').forEach(function (el) {
+    Brand.mascot(el, el.getAttribute('data-mascot'));
+  });
+
+  /* ---------- HUD（採集分數 / 解鎖型態，與其他頁共用 Brand.state） ---------- */
+  function refreshHud() {
+    var s = Brand.state.get();
+    var n = s.unlocked.filter(function (t) { return FIVE.indexOf(t) !== -1; }).length;
+    var scoreEl = document.getElementById('hud-score');
+    var unlockEl = document.getElementById('hud-unlock');
+    if (scoreEl) scoreEl.textContent = s.score;
+    if (unlockEl) unlockEl.textContent = n + ' / 5';
+  }
+  refreshHud();
+
+  /* ---------- 角色卡展開 / 收合 ---------- */
+  document.querySelectorAll('.crew-card__head').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var card = btn.closest('.crew-card');
+      var body = document.getElementById(btn.getAttribute('aria-controls'));
+      var open = card.classList.toggle('is-open');
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (body) body.hidden = !open;
+    });
+  });
+
+  /* ---------- 今日任務：完成 → 採集 +1 並解鎖型態 ---------- */
+  document.querySelectorAll('.quest-done').forEach(function (btn) {
+    var type = btn.getAttribute('data-type');
+    function markDone() {
+      btn.disabled = true;
+      btn.textContent = '✔ 今日已完成 · ' + (Brand.mascotMeta[type] ? Brand.mascotMeta[type].name : '') + '型態已解鎖';
+    }
+    if (Brand.state.get().unlocked.indexOf(type) !== -1) markDone();
+    btn.addEventListener('click', function () {
+      Brand.state.addScore(1);
+      Brand.state.unlock(type);
+      markDone();
+      refreshHud();
+    });
+  });
+
+  /* ---------- Dex 五軸雷達（Brand.radar + 進場生長動畫） ---------- */
+  var AXES = ['提問', '傾聽', '拆解', '實作', '連結'];
+  function rgba(hex, a) {
+    var n = parseInt(hex.slice(1), 16);
+    return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+  document.querySelectorAll('.dex-radar').forEach(function (canvas) {
+    var values = canvas.getAttribute('data-values').split(',').map(Number);
+    var color = canvas.getAttribute('data-color');
+    var size = 190;
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = size * dpr;
+    canvas.height = size * dpr;
+    canvas.style.width = size + 'px';
+    canvas.style.height = size + 'px';
+    var ctx = canvas.getContext('2d');
+    function render(k) {
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, size, size);
+      Brand.radar(ctx, values.map(function (v) { return v * k; }), {
+        size: size, axes: AXES, rScale: 0.33,
+        stroke: color, fill: rgba(color, 0.16), dot: color
+      });
+    }
+    if (REDUCED) { render(1); return; }
+    render(0.001);
+    var io = new IntersectionObserver(function (entries) {
+      if (!entries[0].isIntersecting) return;
+      io.disconnect();
+      var t0 = performance.now();
+      (function tick(now) {
+        var t = Math.min(1, (now - t0) / 750);
+        var e = 1 - Math.pow(1 - t, 3); /* easeOutCubic */
+        render(Math.max(0.001, e));
+        if (t < 1) requestAnimationFrame(tick);
+      })(t0);
+    }, { threshold: 0.25 });
+    io.observe(canvas);
+  });
+
+  /* ---------- 守則便利貼拖曳（僅精準指標裝置，保留行動版捲動） ---------- */
+  if (window.matchMedia && window.matchMedia('(pointer:fine)').matches) {
+    document.querySelectorAll('.rules .note').forEach(function (note) {
+      var dragging = false, sx = 0, sy = 0, bx = 0, by = 0;
+      note.addEventListener('pointerdown', function (e) {
+        if (e.button !== 0) return;
+        dragging = true;
+        sx = e.clientX; sy = e.clientY;
+        bx = parseFloat(note.dataset.dx || '0');
+        by = parseFloat(note.dataset.dy || '0');
+        note.classList.add('is-drag');
+        note.setPointerCapture(e.pointerId);
+      });
+      note.addEventListener('pointermove', function (e) {
+        if (!dragging) return;
+        var dx = bx + e.clientX - sx;
+        var dy = by + e.clientY - sy;
+        note.dataset.dx = dx; note.dataset.dy = dy;
+        note.style.setProperty('--dx', dx + 'px');
+        note.style.setProperty('--dy', dy + 'px');
+      });
+      function drop() { dragging = false; note.classList.remove('is-drag'); }
+      note.addEventListener('pointerup', drop);
+      note.addEventListener('pointercancel', drop);
+    });
+  }
+
+  /* ---------- Hero 生成背景（p5 · 漂浮採集孢子） ---------- */
+  var heroHost = document.getElementById('hero-canvas');
+  if (heroHost && typeof p5 !== 'undefined') {
+    Brand.onView(heroHost, function (p) {
+      var seeds = [], W = 0, H = 0;
+      var COLS = [Brand.colors.ask, Brand.colors.listen, Brand.colors.debate, Brand.colors.build, Brand.colors.connect];
+      function makeSeed() {
+        return {
+          x: p.random(W), y: p.random(H),
+          r: p.random(4, 10),
+          c: COLS[Math.floor(p.random(COLS.length))],
+          v: p.random(0.2, 0.55),
+          ph: p.random(p.TWO_PI),
+          shape: Math.floor(p.random(3))
+        };
+      }
+      function paint() {
+        p.clear();
+        p.noStroke();
+        for (var i = 0; i < seeds.length; i++) {
+          var s = seeds[i];
+          var x = s.x + Math.sin(s.ph + p.frameCount * 0.01) * 14;
+          var col = p.color(s.c); col.setAlpha(70); p.fill(col);
+          if (s.shape === 0) {
+            p.circle(x, s.y, s.r * 2);
+          } else if (s.shape === 1) {
+            p.push(); p.translate(x, s.y); p.rotate(s.ph + p.frameCount * 0.004);
+            p.rect(-s.r, -s.r, s.r * 2, s.r * 2, s.r * 0.6); p.pop();
+          } else {
+            p.push(); p.translate(x, s.y); p.rotate(s.ph);
+            p.rect(-s.r, -1.5, s.r * 2, 3, 2); p.rect(-1.5, -s.r, 3, s.r * 2, 2); p.pop();
+          }
+        }
+      }
+      p.setup = function () {
+        W = heroHost.clientWidth; H = heroHost.clientHeight;
+        var c = p.createCanvas(W, H); c.parent(heroHost);
+        p.pixelDensity(1);
+        seeds = [];
+        var count = W < 720 ? 16 : 30;
+        for (var i = 0; i < count; i++) seeds.push(makeSeed());
+        if (REDUCED) { paint(); p.noLoop(); }
+      };
+      p.draw = function () {
+        paint();
+        if (REDUCED) return;
+        for (var i = 0; i < seeds.length; i++) {
+          var s = seeds[i];
+          s.y -= s.v;
+          if (s.y < -20) { s.y = H + 20; s.x = p.random(W); }
+        }
+      };
+      p.windowResized = function () {
+        W = heroHost.clientWidth; H = heroHost.clientHeight;
+        p.resizeCanvas(W, H);
+        if (REDUCED) paint();
+      };
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -3,1174 +3,373 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 思辨派對 AI DISCOURSE PARTY — 交流產生靈感，思辨激發答案</title>
-<meta name="description" content="一場給 AI 焦慮者、實作者與提問者的 Open Space 聚會。">
+<title>AI 思辨派對 — 交流產生靈感，思辨激發答案</title>
+<meta name="description" content="一場給 AI 焦慮者、實作者與提問者的 Open Space 聚會。把你的卡關種進思辨小花園，帶著卡關進場，帶著思辨獸離開。">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&family=Playfair+Display:ital,wght@0,600;0,800;1,600;1,800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Fredoka:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/brand.css">
 
 <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
 
 <style>
-/* ============================================================
-   AI 思辨派對 — Generative Neo-Brutalist / Editorial System
-   ============================================================ */
-:root{
-  --ink:#111111;
-  --paper:#F4F1EA;
-  --card:#FFFDF5;
-  --red:#FF2D2D;
-  --darkred:#7A1F1F;
-  --gray:#333333;
-  --pink:#FF2A7A;
-  --yellow:#FFCC00;
-  --green:#00D09E;
-  --blue:#0055FF;
-  --role-accent:#FF2A7A;
-  --nav-h:64px;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:smooth;}
-body{
-  background:var(--paper);
-  color:var(--ink);
-  font-family:'Noto Sans TC','Space Grotesk',sans-serif;
-  overflow-x:hidden;
-  -webkit-font-smoothing:antialiased;
-}
-::selection{background:var(--yellow);color:var(--ink);}
-body::after{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.05;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-  mix-blend-mode:multiply;
-}
-a{color:inherit;text-decoration:none;}
-button{font-family:inherit;cursor:pointer;}
-.en{font-family:'Anton','Space Grotesk',sans-serif;letter-spacing:.02em;}
-.mono{font-family:'IBM Plex Mono',monospace;}
-.serif{font-family:'Noto Serif TC','Playfair Display',serif;}
-
-/* ================= NAV ================= */
-.nav{
-  position:fixed;top:0;left:0;right:0;height:var(--nav-h);
-  background:var(--card);border-bottom:3px solid var(--ink);
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 20px;z-index:1000;
-}
-.nav__logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.1rem;letter-spacing:.05em;}
-.nav__logo-mark{
-  width:30px;height:30px;background:var(--red);border:3px solid var(--ink);
-  box-shadow:3px 3px 0 var(--ink);display:grid;place-items:center;
-  font-family:'Anton',sans-serif;color:var(--card);font-size:.85rem;transform:rotate(-6deg);
-}
-.nav__links{display:flex;align-items:center;gap:4px;list-style:none;}
-.nav__links a{font-size:.85rem;font-weight:700;padding:7px 12px;border:2px solid transparent;transition:all .12s;}
-.nav__links a:hover{border-color:var(--ink);background:var(--yellow);box-shadow:3px 3px 0 var(--ink);transform:translate(-1px,-1px);}
-.nav__cta{
-  margin-left:8px;background:var(--red);color:var(--card);border:3px solid var(--ink);
-  box-shadow:4px 4px 0 var(--ink);font-weight:900;font-size:.85rem;padding:8px 18px;transition:all .12s;
-}
-.nav__cta:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink);background:var(--pink);}
-.nav__cta:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink);}
-@media (max-width:1040px){.nav__links li:not(.nav__cta-li){display:none;}}
-
-/* ================= 1. HERO ================= */
-.hero{
-  position:relative;min-height:100vh;min-height:100svh;
-  padding:calc(var(--nav-h) + 40px) 24px 90px;
-  display:flex;align-items:center;overflow:hidden;border-bottom:4px solid var(--ink);
-}
+/* index 頁面特有樣式（骨架排版；元件皆用 brand.css） */
+.hero{position:relative;padding-block:calc(var(--nav-h) + 70px) 80px;overflow:hidden;}
 #hero-canvas{position:absolute;inset:0;z-index:0;}
 #hero-canvas canvas{display:block;}
-.hero__inner{position:relative;z-index:2;width:min(1180px,100%);margin:0 auto;pointer-events:none;}
-.hero__inner a,.hero__inner input,.hero__inner button,.hero__kicker,.hero__sub{pointer-events:auto;}
-.hero__kicker{
-  display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.78rem;font-weight:700;
-  background:var(--ink);color:var(--yellow);padding:6px 12px;transform:rotate(-1.5deg);
-  margin-bottom:22px;box-shadow:4px 4px 0 rgba(17,17,17,.25);
-}
-.hero__title{
-  font-family:'Noto Serif TC','Playfair Display',serif;
-  font-weight:900;font-size:clamp(2.4rem,7vw,5.4rem);line-height:1.08;letter-spacing:.01em;max-width:15em;
-}
-.hero__title .stamp{display:inline-block;padding:.02em .16em;margin:.05em 0;}
-.hero__title .stamp--red{
-  background:var(--red);color:var(--card);border:4px solid var(--ink);
-  box-shadow:8px 8px 0 var(--ink);font-family:'Noto Sans TC',sans-serif;transform:rotate(-1deg);
-}
-.hero__title .stamp--under{
-  background:linear-gradient(transparent 62%, var(--yellow) 62%, var(--yellow) 92%, transparent 92%);
-}
-.hero__en{font-family:'Anton',sans-serif;font-size:clamp(.9rem,2vw,1.25rem);letter-spacing:.28em;margin-top:16px;color:var(--darkred);}
-.hero__sub{
-  margin-top:18px;font-size:clamp(1rem,1.8vw,1.2rem);font-weight:700;color:var(--gray);max-width:32em;
-  background:rgba(255,253,245,.82);display:inline-block;padding:6px 10px;border-left:6px solid var(--pink);
-}
-.hero__form{margin-top:30px;display:flex;flex-wrap:wrap;gap:0;max-width:560px;}
-.hero__input{
-  flex:1;min-width:220px;font-family:'Noto Sans TC',sans-serif;font-size:1rem;font-weight:700;
-  padding:16px 18px;background:var(--card);border:4px solid var(--ink);border-right:none;
-  box-shadow:8px 8px 0 var(--ink);outline:none;
-}
-.hero__input::placeholder{color:#999;font-weight:500;}
-.hero__input:focus{background:#fff;}
-.hero__submit{
-  font-weight:900;font-size:1rem;padding:16px 22px;background:var(--yellow);
-  border:4px solid var(--ink);box-shadow:8px 8px 0 var(--ink);transition:all .12s;white-space:nowrap;
-}
-.hero__submit:hover{background:var(--green);transform:translate(-2px,-2px);box-shadow:10px 10px 0 var(--ink);}
-.hero__submit:active{transform:translate(3px,3px);box-shadow:3px 3px 0 var(--ink);}
-.hero__hint{margin-top:12px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--gray);}
-.hero__caption{
-  position:absolute;left:24px;bottom:104px;z-index:3;max-width:340px;pointer-events:none;
-  opacity:0;transform:translateY(8px);transition:opacity .5s,transform .5s;
-}
-.hero__caption.show{opacity:1;transform:translateY(0);}
-.hero__caption-label{
-  display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.72rem;font-weight:700;letter-spacing:.1em;
-  background:var(--ink);color:var(--yellow);padding:4px 10px;margin-bottom:8px;
-}
-.hero__caption-text{
-  font-family:'Noto Serif TC',serif;font-weight:700;font-size:1.05rem;line-height:1.5;color:var(--darkred);
-  background:rgba(244,241,234,.7);padding:3px 8px;display:inline;
-}
-.hero__live{
-  position:absolute;right:22px;bottom:22px;z-index:3;background:var(--ink);color:var(--card);
-  border:3px solid var(--ink);box-shadow:6px 6px 0 var(--pink);padding:12px 16px;
-  font-family:'IBM Plex Mono',monospace;transform:rotate(1.5deg);
-}
-.hero__live .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--green);margin-right:8px;animation:pulse 1.2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.7);}}
-.hero__live-num{font-size:1.7rem;font-weight:700;color:var(--yellow);}
-.hero__live-label{font-size:.66rem;letter-spacing:.14em;opacity:.85;}
-@media (max-width:640px){
-  .hero{padding-bottom:150px;}
-  .hero__caption{bottom:150px;left:16px;max-width:70vw;}
-  .hero__live{right:14px;bottom:14px;padding:9px 12px;}
-  .hero__live-num{font-size:1.3rem;}
-  .hero__input{border-right:4px solid var(--ink);margin-bottom:12px;width:100%;}
-  .hero__form{flex-direction:column;}
-}
+.hero__grid{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;align-items:center;}
+.hero__title{margin:14px 0 20px;}
+.hero__actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px;}
+.hero__aside{display:flex;flex-direction:column;gap:16px;align-items:flex-start;}
+@media (max-width:860px){.hero__grid{grid-template-columns:1fr;gap:26px;}.hero__aside{flex-direction:row;flex-wrap:wrap;align-items:center;}}
 
-/* ================= 共用區塊 ================= */
-.section{padding:100px 24px;position:relative;}
-.section__inner{width:min(1180px,100%);margin:0 auto;position:relative;z-index:2;}
-.section__tag{
-  display:inline-block;font-family:'IBM Plex Mono',monospace;font-size:.75rem;font-weight:700;letter-spacing:.12em;
-  border:2px solid var(--ink);background:var(--card);box-shadow:4px 4px 0 var(--ink);padding:5px 12px;
-  margin-bottom:20px;transform:rotate(-1deg);
-}
-.section__title{font-weight:900;font-size:clamp(1.7rem,4.6vw,3.2rem);line-height:1.15;margin-bottom:14px;}
-.section__title .hl{background:var(--yellow);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:0 .15em;display:inline-block;transform:rotate(-.6deg);}
+.sec-head{max-width:52ch;margin-bottom:14px;}
+.sec-head .eyebrow{display:block;margin-bottom:12px;}
 
-/* ================= 2. BENTO ================= */
-.bento{border-bottom:4px solid var(--ink);}
-.bento__grid{margin-top:52px;display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
-.bcard{
-  --hover-bg:var(--yellow);position:relative;background:var(--card);border:4px solid var(--ink);
-  box-shadow:8px 8px 0 var(--ink);padding:34px 28px 30px;overflow:hidden;
-  transition:transform .18s ease,box-shadow .18s ease,background .18s ease;
-}
-.bcard__bg{position:absolute;inset:0;z-index:0;}
-.bcard__bg canvas{display:block;}
-.bcard>*:not(.bcard__bg){position:relative;z-index:1;}
-.bcard:hover{transform:translate(-5px,-7px) rotate(-.4deg);box-shadow:14px 15px 0 var(--ink);background:var(--hover-bg);}
-.bcard--think{--hover-bg:var(--yellow);}
-.bcard--debate{--hover-bg:var(--pink);}
-.bcard--act{--hover-bg:var(--green);}
-.bcard--debate:hover{color:var(--card);}
-.bcard--debate:hover .bcard__en,.bcard--debate:hover .bcard__desc{color:rgba(255,253,245,.92);}
-.bcard__num{position:absolute;top:-16px;left:-14px;background:var(--ink);color:var(--card);font-family:'Anton',sans-serif;font-size:.85rem;padding:5px 10px;transform:rotate(-6deg);z-index:2;}
-.bcard__icon{width:76px;height:76px;border:4px solid var(--ink);background:var(--card);box-shadow:5px 5px 0 var(--ink);display:grid;place-items:center;font-size:2.1rem;margin-bottom:22px;transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
-.bcard:hover .bcard__icon{transform:rotate(-10deg) scale(1.12);}
-.bcard__zh{font-size:2.3rem;font-weight:900;line-height:1;}
-.bcard__en{font-family:'Anton',sans-serif;font-size:1rem;letter-spacing:.18em;color:var(--gray);margin:6px 0 16px;}
-.bcard__desc{font-size:1rem;font-weight:500;line-height:1.75;color:var(--gray);}
-@media (max-width:900px){.bento__grid{grid-template-columns:1fr;gap:34px;}}
+.game-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:22px;}
 
-/* ================= 3. FOUNDERS RADAR ================= */
-.founders{background:var(--paper);border-bottom:4px solid var(--ink);position:relative;overflow:hidden;}
-.founders::before{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background-image:repeating-linear-gradient(0deg, rgba(122,31,31,.05) 0 1px, transparent 1px 46px);
-}
-.founders__head{text-align:center;margin-bottom:14px;}
-.founders__vibe{
-  font-family:'Playfair Display',serif;font-style:italic;font-weight:800;
-  font-size:clamp(2rem,5.4vw,3.6rem);line-height:1.1;color:var(--darkred);
-}
-.founders__vibe .amp{color:var(--red);}
-.founders__sub{margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:.8rem;letter-spacing:.12em;color:var(--gray);}
-.founders__tabs{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:30px 0 34px;}
-.founders__tab{
-  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.95rem;letter-spacing:.05em;
-  background:transparent;border:2px solid var(--darkred);color:var(--darkred);padding:8px 20px;transition:all .15s;
-}
-.founders__tab:hover{background:rgba(122,31,31,.08);}
-.founders__tab.active{background:var(--darkred);color:var(--paper);box-shadow:5px 5px 0 var(--red);transform:translate(-2px,-2px);}
-.founders__body{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:48px;align-items:center;}
-.founders__stage{
-  position:relative;width:100%;aspect-ratio:1/1;max-width:560px;margin:0 auto;
-  border:2px solid var(--darkred);box-shadow:12px 12px 0 rgba(122,31,31,.18);background:#0d0d0d;overflow:hidden;
-}
-.founders__img{
-  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-  opacity:0;transition:opacity 1s ease, transform 1s ease;transform:scale(1.06);
-}
-.founders__img.active{opacity:1;transform:scale(1);}
-.founders__img.glitch{animation:glitch .45s steps(2);}
-@keyframes glitch{0%{transform:scale(1) translate(0,0);}30%{transform:scale(1.02) translate(-4px,2px);}60%{transform:scale(1) translate(3px,-2px);}100%{transform:scale(1) translate(0,0);}}
-.founders__scan{position:absolute;inset:0;pointer-events:none;z-index:3;background:repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 2px, transparent 2px 4px);mix-blend-mode:multiply;opacity:.5;}
-#founders-canvas{position:absolute;inset:0;z-index:4;pointer-events:none;}
-#founders-canvas canvas{display:block;}
-.founders__corner{position:absolute;z-index:5;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;color:var(--yellow);background:rgba(17,17,17,.75);padding:3px 7px;}
-.founders__corner--tl{top:8px;left:8px;}
-.founders__corner--br{bottom:8px;right:8px;}
-.founders__name{font-family:'Playfair Display',serif;font-weight:800;font-size:clamp(2.2rem,6vw,3.4rem);line-height:1;color:var(--ink);}
-.founders__role{font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:.14em;font-size:.95rem;color:var(--red);margin:8px 0 4px;}
-.founders__meta{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--gray);margin-bottom:18px;}
-.founders__domain{display:inline-block;font-weight:900;font-size:1.05rem;border-bottom:4px solid var(--yellow);padding-bottom:2px;margin-bottom:14px;}
-.founders__traits{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
-.founders__trait{font-family:'IBM Plex Mono',monospace;font-size:.72rem;border:1.5px solid var(--darkred);color:var(--darkred);padding:4px 10px;}
-.founders__line{font-family:'Noto Serif TC',serif;font-weight:700;font-size:1.3rem;line-height:1.5;color:var(--ink);border-left:5px solid var(--red);padding-left:14px;}
-@media (max-width:860px){.founders__body{grid-template-columns:1fr;gap:30px;}.founders__info{text-align:center;}.founders__traits{justify-content:center;}.founders__line{border-left:none;border-top:4px solid var(--red);padding:14px 0 0;}}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:44px;}
+@media (max-width:860px){.grid-3{grid-template-columns:1fr;}}
 
-/* ================= 4. 便利貼牆 ================= */
-.wall{position:relative;height:340vh;background:var(--ink);}
+/* 便利貼牆 */
+.wall{position:relative;height:330vh;background:linear-gradient(180deg,#2A231C 0%, #1E1813 100%);}
 .wall__sticky{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:flex;flex-direction:column;justify-content:center;}
 #wall-canvas{position:absolute;inset:0;z-index:0;}
-#wall-canvas canvas{display:block;}
 .wall__sticky>*:not(#wall-canvas){position:relative;z-index:1;}
-.wall__head{padding:calc(var(--nav-h) + 14px) 24px 8px;width:min(1180px,100%);margin:0 auto;}
-.wall .section__tag{transform:rotate(1deg);}
-.wall .section__title{color:var(--card);}
-.wall .section__title .hl{background:var(--red);color:var(--card);box-shadow:5px 5px 0 var(--pink);}
-.wall__track{display:flex;align-items:center;gap:44px;padding:50px 24px 30px;width:max-content;will-change:transform;}
-.note{
-  --note-bg:var(--yellow);--note-rot:-2deg;position:relative;width:min(320px,74vw);min-height:300px;
-  background:var(--note-bg);border:4px solid var(--card);box-shadow:10px 10px 0 rgba(255,253,245,.22);
-  padding:60px 26px 28px;transform:rotate(var(--note-rot));flex-shrink:0;color:var(--ink);
-}
-.note:hover{animation:wiggle .35s ease-in-out;}
-@keyframes wiggle{0%,100%{transform:rotate(var(--note-rot));}25%{transform:rotate(calc(var(--note-rot) + 3deg)) translateY(-4px);}75%{transform:rotate(calc(var(--note-rot) - 3deg)) translateY(-2px);}}
-.note__tape{position:absolute;top:-16px;left:50%;width:110px;height:30px;transform:translateX(-50%) rotate(-3deg);background:rgba(255,253,245,.75);border:2px dashed rgba(17,17,17,.35);}
-.note__step{position:absolute;top:16px;left:20px;font-family:'Anton',sans-serif;font-size:.8rem;letter-spacing:.1em;background:var(--ink);color:var(--card);padding:4px 10px;}
-.note__title{font-size:1.7rem;font-weight:900;line-height:1.25;margin-bottom:14px;}
-.note__desc{font-size:.95rem;font-weight:500;line-height:1.7;}
-.note__doodle{position:absolute;right:18px;bottom:16px;font-size:1.9rem;transform:rotate(8deg);}
-.note--1{--note-bg:var(--yellow);--note-rot:-3deg;}
-.note--2{--note-bg:var(--pink);--note-rot:2deg;color:var(--card);}
-.note--2 .note__step{background:var(--card);color:var(--ink);}
-.note--3{--note-bg:var(--green);--note-rot:-1.5deg;}
-.note--4{--note-bg:var(--blue);--note-rot:2.5deg;color:var(--card);}
-.note--4 .note__step{background:var(--card);color:var(--ink);}
-.note--5{--note-bg:var(--red);--note-rot:-2deg;color:var(--card);}
-.note--5 .note__step{background:var(--card);color:var(--ink);}
-.wall__arrow{flex-shrink:0;font-family:'Anton',sans-serif;color:var(--card);font-size:2.4rem;opacity:.5;}
-.wall__progress{margin:0 auto 26px;width:min(1180px,calc(100% - 48px));height:8px;border:2px solid var(--card);background:transparent;}
-.wall__progress-bar{height:100%;width:0%;background:var(--yellow);}
-@media (max-width:640px){.wall{height:300vh;}.note{min-height:260px;padding-top:52px;}.note__title{font-size:1.4rem;}}
+.wall__head{width:min(1200px,100%);margin-inline:auto;padding:calc(var(--nav-h) + 10px) 24px 6px;}
+.wall__head .display{color:#F3EEE2;}
+.wall__head .eyebrow{color:var(--c-ask);display:block;margin-bottom:10px;}
+.wall__track{display:flex;align-items:center;gap:36px;padding:44px 24px 24px;width:max-content;will-change:transform;}
+.wall .note{width:min(310px,74vw);min-height:290px;flex-shrink:0;}
+.wall__arrow{flex-shrink:0;font-family:var(--font-display);color:#F3EEE2;font-size:2.2rem;opacity:.45;}
+.wall__progress{width:min(1200px,calc(100% - 48px));margin:0 auto 22px;}
 
-/* ================= 5. 雷達選擇器 ================= */
-.radar{border-bottom:4px solid var(--ink);background:var(--paper);}
-.radar__grid{margin-top:48px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:40px;align-items:start;}
-.radar__canvas-wrap{position:relative;background:var(--card);border:4px solid var(--ink);box-shadow:10px 10px 0 var(--ink);padding:12px;}
-#radar-canvas{width:100%;display:flex;justify-content:center;}
-#radar-canvas canvas{display:block;max-width:100%;height:auto!important;}
-.radar__canvas-tag{position:absolute;top:-14px;right:16px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;font-weight:700;background:var(--ink);color:var(--card);padding:4px 10px;transform:rotate(2deg);}
-.radar__hint{position:absolute;left:16px;bottom:-14px;font-family:'IBM Plex Mono',monospace;font-size:.66rem;background:var(--yellow);border:2px solid var(--ink);padding:3px 8px;transform:rotate(-1.5deg);}
-.radar__roles{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:26px;}
-.role-btn{--rc:var(--pink);font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:.92rem;background:var(--card);border:3px solid var(--ink);box-shadow:5px 5px 0 var(--ink);padding:10px 16px;transition:all .12s;display:flex;align-items:center;gap:8px;}
-.role-btn .chip{width:12px;height:12px;background:var(--rc);border:2px solid var(--ink);display:inline-block;}
-.role-btn:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink);}
-.role-btn.active{background:var(--rc);color:var(--ink);transform:translate(-2px,-2px);box-shadow:7px 7px 0 var(--ink);}
-.role-btn.active.on-dark{color:var(--card);}
-.role-btn.active .chip{background:var(--card);}
-.radar__result{background:var(--card);border:4px solid var(--ink);border-left:14px solid var(--role-accent);box-shadow:8px 8px 0 var(--ink);padding:28px 26px;transition:border-color .3s;}
-.radar__result-role{font-size:1.6rem;font-weight:900;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.radar__result-role .en-tag{font-family:'Anton',sans-serif;font-size:.85rem;letter-spacing:.12em;background:var(--role-accent);border:2px solid var(--ink);padding:3px 10px;transition:background .3s;}
-.radar__result-desc{margin-top:10px;font-weight:500;color:var(--gray);line-height:1.7;}
-.radar__result-rec{margin-top:18px;padding-top:18px;border-top:3px dashed var(--ink);}
-.radar__result-rec-label{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:700;letter-spacing:.14em;color:var(--gray);margin-bottom:10px;}
-.radar__tables{display:flex;flex-wrap:wrap;gap:10px;}
-.radar__table-chip{font-weight:700;font-size:.9rem;background:var(--paper);border:3px solid var(--ink);box-shadow:4px 4px 0 var(--role-accent);padding:7px 13px;transition:box-shadow .3s;}
-@media (max-width:900px){.radar__grid{grid-template-columns:1fr;}}
+/* 型態雷達 */
+.type-grid{margin-top:44px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;align-items:start;}
+.type-canvas-host{display:flex;justify-content:center;}
+.type-roles{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px;}
+.type-btn{--rc:var(--c-ask);display:flex;align-items:center;gap:8px;font-weight:600;font-size:.92rem;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:10px 16px;box-shadow:var(--soft-sm);transition:.14s cubic-bezier(.34,1.56,.64,1);}
+.type-btn .chip__dot{background:var(--rc);}
+.type-btn:hover{transform:translateY(-2px);box-shadow:var(--soft);}
+.type-btn.is-active{background:var(--rc);color:#fff;border-color:transparent;}
+.type-btn.is-active .chip__dot{background:#fff;}
+.type-result{background:var(--card);border:1px solid var(--line);border-left:12px solid var(--role-accent,#E0A92E);border-radius:var(--radius-lg);box-shadow:var(--soft-sm);padding:26px 24px;transition:border-color .3s;}
+.type-result__name{font-family:var(--font-display);font-weight:900;font-size:1.5rem;display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.type-result__tag{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;background:var(--role-accent,#E0A92E);color:#fff;padding:4px 10px;border-radius:8px;}
+.type-result__desc{margin-top:10px;color:var(--ink-soft);}
+.type-result__rec{margin-top:16px;padding-top:16px;border-top:1px dashed var(--line);display:flex;gap:8px;flex-wrap:wrap;}
+@media (max-width:860px){.type-grid{grid-template-columns:1fr;}}
 
-/* ================= 6. JOIN CTA ================= */
-.cta{position:relative;background:var(--ink);color:var(--card);padding:130px 24px 150px;overflow:hidden;border-bottom:4px solid var(--ink);}
-#cta-canvas{position:absolute;inset:0;z-index:0;}
-#cta-canvas canvas{display:block;}
-.marquee{position:absolute;left:0;right:0;overflow:hidden;pointer-events:none;white-space:nowrap;opacity:.16;z-index:1;}
-.marquee--top{top:36px;}
-.marquee--bottom{bottom:36px;}
-.marquee__inner{display:inline-block;font-family:'Anton',sans-serif;font-size:clamp(2.4rem,6vw,4.6rem);letter-spacing:.06em;color:var(--card);animation:marquee 22s linear infinite;}
-.marquee--bottom .marquee__inner{animation-direction:reverse;animation-duration:28s;}
-@keyframes marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-.cta__inner{position:relative;z-index:2;width:min(900px,100%);margin:0 auto;text-align:center;}
-.cta .section__tag{background:var(--ink);color:var(--yellow);border-color:var(--yellow);box-shadow:4px 4px 0 var(--yellow);}
-.cta__title{font-weight:900;font-size:clamp(1.8rem,5vw,3.4rem);line-height:1.2;margin-bottom:16px;}
-.cta__title .hl-red{background:var(--red);border:3px solid var(--card);box-shadow:6px 6px 0 var(--pink);padding:0 .15em;display:inline-block;transform:rotate(-.8deg);}
-.cta__sub{font-family:'IBM Plex Mono',monospace;font-size:.85rem;color:rgba(255,253,245,.7);margin-bottom:56px;}
-.arcade-wrap{position:relative;display:inline-block;}
-.arcade{
-  position:relative;font-family:'Noto Sans TC',sans-serif;font-weight:900;font-size:clamp(1.4rem,3.4vw,2.2rem);
-  color:var(--card);background:var(--pink);border:6px solid var(--card);
-  box-shadow:12px 12px 0 var(--card), 12px 12px 0 6px var(--ink);padding:30px 60px;letter-spacing:.06em;transition:all .12s;
-}
-.arcade .arcade__en{display:block;font-family:'Anton',sans-serif;font-size:.55em;letter-spacing:.3em;margin-top:8px;color:var(--yellow);}
-.arcade:hover{transform:translate(-4px,-4px);box-shadow:16px 16px 0 var(--card), 16px 16px 0 6px var(--ink), 0 0 44px rgba(255,42,122,.75);background:var(--red);}
-.arcade:active,.arcade.pressed{transform:translate(8px,8px);box-shadow:4px 4px 0 var(--card);}
-.arcade.shake{animation:btnshake .4s;}
-@keyframes btnshake{0%,100%{transform:translate(0,0);}20%{transform:translate(-6px,3px) rotate(-1.5deg);}40%{transform:translate(5px,-4px) rotate(1.2deg);}60%{transform:translate(-4px,-2px) rotate(-1deg);}80%{transform:translate(3px,3px) rotate(.8deg);}}
-.cta__meta{margin-top:52px;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;font-family:'IBM Plex Mono',monospace;font-size:.75rem;}
-.cta__meta span{border:2px solid rgba(255,253,245,.4);padding:6px 12px;}
-.cta__meta .accent{border-color:var(--green);color:var(--green);}
+/* 採集隊 teaser */
+.crew{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin:40px 0 30px;}
+.crew .mascot{width:96px;height:116px;}
 
-/* ================= FOOTER ================= */
-.footer{background:var(--gray);color:var(--paper);padding:56px 24px 40px;}
-.footer__inner{width:min(1180px,100%);margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;}
-.footer__brand{font-weight:900;font-size:1.3rem;}
-.footer__tagline{margin-top:10px;font-weight:500;font-size:.92rem;color:rgba(244,241,234,.75);max-width:30em;line-height:1.7;}
-.footer__copy{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:rgba(244,241,234,.55);}
+/* 創辦人 teaser */
+.founders-teaser{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:38px;}
+@media (max-width:860px){.founders-teaser{grid-template-columns:repeat(2,1fr);}}
 
-@media (prefers-reduced-motion:reduce){
-  .marquee__inner{animation-duration:90s;}
-  .note:hover,.arcade.shake,.founders__img.glitch{animation:none;}
-}
+/* Join CTA */
+.join{background:linear-gradient(180deg,#241A14 0%, #1A1310 100%);color:#F3EEE2;text-align:center;position:relative;overflow:hidden;}
+#join-canvas{position:absolute;inset:0;z-index:0;}
+.join__inner{position:relative;z-index:2;max-width:760px;margin-inline:auto;}
+.join .display{color:#F8F1E4;}
+.join__quote{font-family:var(--font-display);font-weight:900;font-size:clamp(1.8rem,4.4vw,3rem);line-height:1.3;margin-bottom:26px;}
+.join__quote .mk{color:var(--c-ask);}
+.marquee{position:absolute;left:0;right:0;overflow:hidden;white-space:nowrap;opacity:.1;z-index:1;pointer-events:none;}
+.marquee--top{top:30px;}.marquee--bottom{bottom:30px;}
+.marquee span{display:inline-block;font-family:var(--font-display);font-weight:900;font-size:clamp(2rem,6vw,4rem);animation:mq 26s linear infinite;}
+.marquee--bottom span{animation-direction:reverse;}
+@keyframes mq{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 </style>
 </head>
 <body>
 
-<!-- ================= NAV ================= -->
-<nav class="nav">
-  <a class="nav__logo" href="#top"><span class="nav__logo-mark">AI</span><span>AI 思辨派對</span></a>
-  <ul class="nav__links">
-    <li><a href="#top">首頁</a></li>
-    <li><a href="#how">活動機制</a></li>
-    <li><a href="#founders">創辦人</a></li>
-    <li><a href="#wall">議題市集</a></li>
-    <li><a href="#radar">社群成員</a></li>
-    <li><a href="#join">活動場次</a></li>
-    <li class="nav__cta-li"><a href="#join"><button class="nav__cta">立即報名 →</button></a></li>
-  </ul>
-</nav>
-
-<!-- ================= 1. HERO ================= -->
-<header class="hero" id="top">
+<!-- ======= HERO ======= -->
+<header class="hero bg-grid">
   <div id="hero-canvas"></div>
-  <div class="hero__inner">
-    <span class="hero__kicker">OPEN SPACE ✦ NO STAGE ✦ ALL VOICES</span>
-    <h1 class="hero__title">
-      <span class="stamp stamp--under">交流產生靈感，</span><br>
-      <span class="stamp stamp--red">思辨激發答案</span>
-    </h1>
-    <div class="hero__en en">AI DISCOURSE PARTY</div>
-    <p class="hero__sub">一場給 AI 焦慮者、實作者與提問者的 Open Space 聚會。</p>
-    <form class="hero__form" id="hero-form" autocomplete="off">
-      <input class="hero__input" id="hero-input" type="text" maxlength="20" placeholder="你的 AI 卡關是什麼？">
-      <button class="hero__submit" type="submit">丟進派對 ➔</button>
-    </form>
-    <p class="hero__hint">// 你的問題會拆成字元加入思辨彈幕，並參與下一次的「聚形」。滑鼠靠近可推開字流。</p>
-  </div>
-  <div class="hero__caption" id="hero-caption">
-    <span class="hero__caption-label" id="hero-caption-label">思 · THINK</span><br>
-    <span class="hero__caption-text" id="hero-caption-text"></span>
-  </div>
-  <div class="hero__live">
-    <div><span class="dot"></span><span class="hero__live-num" id="live-count">128</span></div>
-    <div class="hero__live-label">LIVE PARTICIPANTS 正在思辨中</div>
+  <div class="container hero__grid">
+    <div>
+      <span class="eyebrow">OPEN SPACE · 思辨小花園開張中</span>
+      <h1 class="display display--xl hero__title">交流產生靈感，<br><span class="underline-mark">思辨激發答案</span></h1>
+      <p class="lead">一場給 AI 焦慮者、實作者與提問者的 Open Space 聚會。把你的卡關種下去，看它和別人的問題長成新的想法。</p>
+      <div class="hero__actions">
+        <a href="#game"><button class="btn btn--primary">🌱 玩思辨方塊</button></a>
+        <a href="about.html#join"><button class="btn btn--ghost">看下一場派對</button></a>
+      </div>
+    </div>
+    <aside class="hero__aside">
+      <div class="hud"><span class="hud__icon">🌿</span><div><div class="hud__num" id="live-count">128</div><div class="hud__label">正在思辨中</div></div></div>
+      <div class="hud"><span class="hud__icon">💎</span><div><div class="hud__num" id="hero-score">0</div><div class="hud__label">花園結晶數</div></div></div>
+      <span class="chip"><span class="chip__dot"></span>AI DISCOURSE PARTY</span>
+    </aside>
   </div>
 </header>
 
-<!-- ================= 2. BENTO ================= -->
-<section class="section bento" id="how">
-  <div class="section__inner">
-    <span class="section__tag">01 — WHY WE PARTY</span>
-    <h2 class="section__title">不只聽講，而是<span class="hl">把問題拿出來碰撞</span>。</h2>
-    <div class="bento__grid">
-      <article class="bcard bcard--think" data-tex="think">
-        <div class="bcard__bg" id="bg-think"></div>
-        <span class="bcard__num">STEP A</span>
-        <div class="bcard__icon">💡</div>
-        <h3 class="bcard__zh">思</h3><div class="bcard__en">THINK</div>
-        <p class="bcard__desc">把模糊的焦慮變成具體問題。說不清楚的煩躁，先寫下來、拆開來，才有辦法被討論。</p>
-      </article>
-      <article class="bcard bcard--debate" data-tex="debate">
-        <div class="bcard__bg" id="bg-debate"></div>
-        <span class="bcard__num">STEP B</span>
-        <div class="bcard__icon">⚡</div>
-        <h3 class="bcard__zh">辨</h3><div class="bcard__en">DEBATE</div>
-        <p class="bcard__desc">讓不同觀點互相校正。實作者、懷疑者、提問者坐在同一桌，答案在碰撞中長出來。</p>
-      </article>
-      <article class="bcard bcard--act" data-tex="act">
-        <div class="bcard__bg" id="bg-act"></div>
-        <span class="bcard__num">STEP C</span>
-        <div class="bcard__icon">🚀</div>
-        <h3 class="bcard__zh">行</h3><div class="bcard__en">ACT</div>
-        <p class="bcard__desc">把討論轉成下一步行動。離場前每個人帶走一件可以立刻做的事，不讓靈感留在現場。</p>
-      </article>
+<!-- ======= 招牌互動：思辨方塊 ======= -->
+<section class="section" id="game">
+  <div class="container">
+    <div class="game-head">
+      <div class="sec-head">
+        <span class="eyebrow">PLAY · 共創遊戲</span>
+        <h2 class="display display--lg">思辨方塊 <span class="underline-mark">Deliberation Blocks</span></h2>
+        <p class="lead" style="margin-top:8px;">把 AI 卡關丟進花園 → 變成方塊落下 → 三塊同色碰在一起會迸出「思想結晶」→ 點結晶展開，看見前人的思辨軌跡。可拖曳整理，你的花園會被記住。</p>
+      </div>
+      <div class="stat"><span class="stat__num num" id="score-num">0</span><span class="stat__label">Concept Nodes 結晶數</span></div>
+    </div>
+    <div id="game-mount"></div>
+  </div>
+</section>
+
+<!-- ======= 思・辨・行 三卡 ======= -->
+<section class="section" style="background:var(--paper-2);">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">01 — WHY WE PARTY</span>
+      <h2 class="display display--lg">不只聽講，而是<span class="underline-mark">把問題拿出來碰撞</span>。</h2>
+    </div>
+    <div class="grid-3">
+      <article class="mission-card"><div class="mission-card__icon">💡</div><div class="mission-card__zh">思</div><div class="mission-card__en">THINK</div><p class="mission-card__desc">把模糊的焦慮變成具體問題。說不清楚的煩躁，先寫下來、拆開來，才有辦法被討論。</p></article>
+      <article class="mission-card"><div class="mission-card__icon">⚖️</div><div class="mission-card__zh">辨</div><div class="mission-card__en">DEBATE</div><p class="mission-card__desc">讓不同觀點互相校正。實作者、懷疑者、提問者坐在同一桌，答案在碰撞中長出來。</p></article>
+      <article class="mission-card"><div class="mission-card__icon">🚀</div><div class="mission-card__zh">行</div><div class="mission-card__en">ACT</div><p class="mission-card__desc">把討論轉成下一步行動。離場前每個人帶走一件可以立刻做的事，不讓靈感留在現場。</p></article>
     </div>
   </div>
 </section>
 
-<!-- ================= 3. FOUNDERS RADAR ================= -->
-<section class="section founders" id="founders">
-  <div class="section__inner">
-    <div class="founders__head">
-      <div class="founders__vibe serif">what's your discourse <span class="amp">vibe</span> today?</div>
-      <div class="founders__sub">// FOUR MINDS · ONE DISCOURSE — 認識把這場派對辦起來的人</div>
-    </div>
-    <div class="founders__tabs" id="founders-tabs"></div>
-    <div class="founders__body">
-      <div class="founders__stage" id="founders-stage">
-        <span class="founders__corner founders__corner--tl mono">DISCOURSE RADAR // LIVE</span>
-        <span class="founders__corner founders__corner--br mono" id="founders-idx">01 / 04</span>
-        <div class="founders__scan"></div>
-        <div id="founders-canvas"></div>
-      </div>
-      <div class="founders__info">
-        <div class="founders__name" id="f-name">Bogi</div>
-        <div class="founders__role" id="f-role">CO-FOUNDER / CEO</div>
-        <div class="founders__meta mono" id="f-meta">result // strategic driver</div>
-        <div class="founders__domain" id="f-domain">Vision &amp; Leadership</div>
-        <div class="founders__traits" id="f-traits"></div>
-        <div class="founders__line serif" id="f-line">把散落的潛力，變成方向。</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= 4. 便利貼牆 ================= -->
+<!-- ======= 派對怎麼玩：橫向便利貼牆 ======= -->
 <section class="wall" id="wall">
   <div class="wall__sticky">
     <div id="wall-canvas"></div>
     <div class="wall__head">
-      <span class="section__tag">02 — HOW IT WORKS</span>
-      <h2 class="section__title">沒有老師、沒有標準答案，<br>只有<span class="hl">正在發生的問題</span>。</h2>
+      <span class="eyebrow">02 — HOW IT WORKS</span>
+      <h2 class="display display--lg">沒有老師、沒有標準答案，<br>只有正在發生的問題。</h2>
     </div>
     <div class="wall__track" id="wall-track">
-      <article class="note note--1"><div class="note__tape"></div><span class="note__step">STEP 1</span><h3 class="note__title">帶著問題來</h3><p class="note__desc">不需要準備簡報，不需要是專家。一個卡住你的問題，就是最好的入場券。</p><span class="note__doodle">🎫</span></article>
+      <article class="note" style="--note-bg:var(--c-ask);--note-rot:-3deg;"><span class="pin"></span><span class="note__step">STEP 1</span><h3 class="note__title">帶著問題來</h3><p class="note__desc">不需要準備簡報，不需要是專家。一個卡住你的問題，就是最好的入場券。</p></article>
       <span class="wall__arrow">→</span>
-      <article class="note note--2"><div class="note__tape"></div><span class="note__step">STEP 2</span><h3 class="note__title">貼上議題牆</h3><p class="note__desc">把問題寫在便利貼上，貼上牆。你會發現：原來卡住你的，也卡住了別人。</p><span class="note__doodle">📌</span></article>
+      <article class="note" style="--note-bg:var(--c-listen);--note-rot:2deg;color:#F3EEE2;"><span class="pin"></span><span class="note__step">STEP 2</span><h3 class="note__title">貼上議題牆</h3><p class="note__desc">把問題寫在便利貼上，貼上牆。你會發現：原來卡住你的，也卡住了別人。</p></article>
       <span class="wall__arrow">→</span>
-      <article class="note note--3"><div class="note__tape"></div><span class="note__step">STEP 3</span><h3 class="note__title">找到同題夥伴</h3><p class="note__desc">用腳投票，走向你最有感的議題桌。Open Space 法則：走到哪，哪裡就是對的地方。</p><span class="note__doodle">🤝</span></article>
+      <article class="note" style="--note-bg:var(--c-build);--note-rot:-1.5deg;"><span class="pin"></span><span class="note__step">STEP 3</span><h3 class="note__title">找到同題夥伴</h3><p class="note__desc">用腳投票，走向你最有感的議題桌。Open Space 法則：走到哪，哪裡就是對的地方。</p></article>
       <span class="wall__arrow">→</span>
-      <article class="note note--4"><div class="note__tape"></div><span class="note__step">STEP 4</span><h3 class="note__title">開始深聊碰撞</h3><p class="note__desc">沒有主持人壟斷發言。經驗、質疑、反例輪流上桌，讓觀點互相校正。</p><span class="note__doodle">🔥</span></article>
+      <article class="note" style="--note-bg:var(--c-debate);--note-rot:2.5deg;color:#F3EEE2;"><span class="pin"></span><span class="note__step">STEP 4</span><h3 class="note__title">開始深聊碰撞</h3><p class="note__desc">沒有主持人壟斷發言。經驗、質疑、反例輪流上桌，讓觀點互相校正。</p></article>
       <span class="wall__arrow">→</span>
-      <article class="note note--5"><div class="note__tape"></div><span class="note__step">STEP 5</span><h3 class="note__title">帶走行動方向</h3><p class="note__desc">散場前寫下你的下一步：要試的工具、要找的人、要驗證的想法。派對結束，行動開始。</p><span class="note__doodle">🧭</span></article>
+      <article class="note" style="--note-bg:var(--c-connect);--note-rot:-2deg;color:#F3EEE2;"><span class="pin"></span><span class="note__step">STEP 5</span><h3 class="note__title">帶走行動方向</h3><p class="note__desc">散場前寫下你的下一步：要試的工具、要找的人、要驗證的想法。派對結束，行動開始。</p></article>
     </div>
-    <div class="wall__progress"><div class="wall__progress-bar" id="wall-progress"></div></div>
+    <div class="progress wall__progress"><div class="progress__bar" id="wall-progress"></div></div>
   </div>
 </section>
 
-<!-- ================= 5. 雷達選擇器 ================= -->
-<section class="section radar" id="radar">
-  <div class="section__inner">
-    <span class="section__tag">03 — CHOOSE YOUR ENERGY</span>
-    <h2 class="section__title">你今天帶著<span class="hl">哪一種能量</span>進場？</h2>
-    <p style="font-weight:500;color:var(--gray);max-width:36em;">點選角色按鈕，或直接<b>拖曳雷達頂點</b>即時捏出你的能量形狀。沒有對錯，只有你今晚想成為的樣子。</p>
-    <div class="radar__grid">
-      <div class="radar__canvas-wrap">
-        <span class="radar__canvas-tag">DISCOURSE RADAR v2.0</span>
-        <div id="radar-canvas"></div>
-        <span class="radar__hint">↔ 拖曳頂點微調</span>
+<!-- ======= 你是哪一種思辨者：型態雷達 ======= -->
+<section class="section" id="types">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">03 — WHICH DISCOURSE TYPE</span>
+      <h2 class="display display--lg">你是<span class="underline-mark">哪一種思辨者</span>？</h2>
+      <p class="lead" style="margin-top:8px;">點角色按鈕，或直接拖曳雷達頂點，捏出你的思辨能量形狀。五種主型態，沒有對錯。</p>
+    </div>
+    <div class="type-grid">
+      <div class="radar-wrap">
+        <span class="badge radar-wrap__tag">DISCOURSE RADAR</span>
+        <div class="type-canvas-host" id="type-canvas"></div>
       </div>
       <div>
-        <div class="radar__roles" id="role-buttons"></div>
-        <div class="radar__result" id="radar-result">
-          <div class="radar__result-role"><span id="result-zh">探索者</span><span class="en-tag" id="result-en">EXPLORER</span></div>
-          <p class="radar__result-desc" id="result-desc">想知道 AI 還能怎麼用。你的好奇心就是派對的燃料。</p>
-          <div class="radar__result-rec">
-            <div class="radar__result-rec-label">// RECOMMENDED FOR YOU 你適合加入：</div>
-            <div class="radar__tables" id="result-tables"></div>
-          </div>
+        <div class="type-roles" id="type-roles"></div>
+        <div class="type-result" id="type-result">
+          <div class="type-result__name"><span id="type-zh">探索者</span><span class="type-result__tag" id="type-en">EXPLORER</span></div>
+          <p class="type-result__desc" id="type-desc"></p>
+          <div class="type-result__rec" id="type-rec"></div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ================= 6. JOIN CTA ================= -->
-<section class="cta" id="join">
-  <div id="cta-canvas"></div>
-  <div class="marquee marquee--top"><div class="marquee__inner" id="marquee-top"></div></div>
-  <div class="marquee marquee--bottom"><div class="marquee__inner" id="marquee-bottom"></div></div>
-  <div class="cta__inner">
-    <span class="section__tag">04 — JOIN THE PARTY</span>
-    <h2 class="cta__title">不一個人卡關，<br>帶走<span class="hl-red">實質的思辨果實</span>。</h2>
-    <p class="cta__sub">// NEXT SESSION LOADING… PRESS START TO CONTINUE</p>
-    <div class="arcade-wrap" id="arcade-wrap">
-      <button class="arcade" id="arcade-btn">加入下一場派對<span class="arcade__en">PRESS START ▶</span></button>
-    </div>
-    <div class="cta__meta"><span>📍 台北・線下聚會</span><span class="accent">🕖 每月一場</span><span>🎟 名額有限</span></div>
+<!-- ======= 採集隊 teaser ======= -->
+<section class="section" style="background:var(--paper-2);text-align:center;">
+  <div class="container">
+    <span class="eyebrow">04 — MEET THE CREW</span>
+    <h2 class="display display--lg" style="margin-top:12px;">思辨獸採集隊，<span class="underline-mark">已經在花園裡了</span>。</h2>
+    <p class="lead" style="margin:12px auto 0;">每一種思辨能量，都有一隻對應的思辨獸。參加派對、丟出卡關、促成結晶，就能採集、解鎖牠們。</p>
+    <div class="crew" id="crew"></div>
+    <a href="community.html"><button class="btn btn--primary">進入採集隊 →</button></a>
   </div>
 </section>
 
-<!-- ================= FOOTER ================= -->
-<footer class="footer" id="footer">
-  <div class="footer__inner">
-    <div>
-      <div class="footer__brand">AI 思辨派對 <span class="en" style="font-size:.8rem;letter-spacing:.15em;">AI DISCOURSE PARTY</span></div>
-      <p class="footer__tagline">派對還沒開始，思辨已經在發生。我們相信答案不在講台上，而在每一張願意把問題拿出來的桌子上。</p>
+<!-- ======= 創辦人 teaser ======= -->
+<section class="section" id="founders">
+  <div class="container">
+    <div class="sec-head">
+      <span class="eyebrow">05 — WHO PLANTED THIS</span>
+      <h2 class="display display--lg">把這座花園種起來的<span class="underline-mark">四顆腦袋</span>。</h2>
     </div>
-    <div class="footer__copy">© 2026 AI DISCOURSE PARTY. ALL QUESTIONS RESERVED.</div>
+    <div class="founders-teaser" id="founders-teaser"></div>
+    <div style="margin-top:26px;"><a href="about.html"><button class="btn btn--ghost">認識創辦人與品牌故事 →</button></a></div>
   </div>
-</footer>
+</section>
 
+<!-- ======= Join CTA ======= -->
+<section class="section join" id="join">
+  <div class="marquee marquee--top"><span id="mq-top"></span></div>
+  <div class="marquee marquee--bottom"><span id="mq-bottom"></span></div>
+  <div id="join-canvas"></div>
+  <div class="container join__inner">
+    <span class="eyebrow" style="color:var(--c-ask);">JOIN THE PARTY</span>
+    <p class="join__quote" style="margin-top:16px;">帶著<span class="mk">卡關</span>進場，<br>帶著<span class="mk">思辨獸</span>離開。</p>
+    <div class="arcade-wrap" style="display:inline-block;position:relative;">
+      <button class="btn btn--primary" id="join-btn" style="font-size:1.2rem;padding:18px 40px;">加入下一場派對 ▶</button>
+    </div>
+    <div style="margin-top:34px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <span class="chip">📍 台北・線下聚會</span><span class="chip">🕖 每月一場</span><span class="chip">🎟 名額有限</span>
+    </div>
+  </div>
+</section>
+
+<script src="assets/brand.js"></script>
 <script>
 /* ============================================================
-   全域設定 / 可調參數
+   index.html 頁面腳本 —— 呼叫共用 Brand API
    ============================================================ */
-const ACCENTS = ['#FF2A7A','#FFCC00','#00D09E','#0055FF','#FF2D2D'];
+Brand.initChrome('home');
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const isMobile = () => window.innerWidth < 720;
-let fontsReady = false;
+const TC = Brand.colors;
 
-/* Hero 彈幕主題文字池（思辨 / AI / 人性 / 七宗罪） */
-const THEMES = [
-  "AI 會取代我嗎","我還有價值嗎","Prompt 寫不出想要的","版權該怎麼算","誰為 AI 的錯負責",
-  "人性會被演算法馴化嗎","真實與生成的界線","該相信誰的答案","智慧是計算還是理解","什麼是不能被自動化的",
-  "你的判斷還是你的嗎","我們在教 AI 說謊嗎","傲慢 讓我們高估自己","貪婪 餵養無止盡的資料","慾望被推薦系統放大",
-  "嫉妒 在動態牆上蔓延","懶惰 讓思考外包出去","憤怒 成為流量的燃料","暴食 資訊吃到撐","色慾 被演算法計算"
-];
-
-/* Hero 聚形模組清單（type / value / palette / label / caption）— 可自由增減與調色 */
-const MODULES = [
-  {type:'glyph', value:'思', latin:false, palette:['#111111','#FF2D2D','#7A1F1F'], label:'思 · THINK',      caption:'把模糊的焦慮，變成一個具體的問題。'},
-  {type:'glyph', value:'辨', latin:false, palette:['#0055FF','#111111','#3f86ff'], label:'辨 · DEBATE',     caption:'讓不同的觀點，互相校正。'},
-  {type:'glyph', value:'人', latin:false, palette:['#00D09E','#0a8f6f','#111111'], label:'人 · HUMANITY',   caption:'什麼，是不能被自動化的？'},
-  {type:'glyph', value:'慾', latin:false, palette:['#FF2A7A','#FF2D2D','#111111'], label:'慾 · SEVEN SINS', caption:'慾望，正在被演算法計算與放大。'},
-  {type:'glyph', value:'AI', latin:true,  palette:['#FFCC00','#FF2A7A','#0055FF'], label:'AI · WHO DECIDES', caption:'我們，該相信誰的答案？'},
-  {type:'silhouette', value:'face', latin:false, palette:['#FFCC00','#FF2D2D','#111111'], label:'人 · YOU',  caption:'你的判斷，還是你的嗎？'}
-];
-
-/* 只在進入視窗時 loop，離開時 noLoop —— 省效能 */
-function loopControl(el, instances){
-  const list = Array.isArray(instances) ? instances : [instances];
-  const io = new IntersectionObserver((entries)=>{
-    const vis = entries[0].isIntersecting;
-    list.forEach(i=>{ if(!i) return; vis ? i.loop() : i.noLoop(); });
-  }, {threshold:0.02});
-  io.observe(el);
-}
-
-/* ============================================================
-   1. HERO — 彈幕 → 形狀 generative 引擎
-   ============================================================ */
-const heroSketch = (p) => {
-  let particles = [], W, H, heroEl;
-  let state = 'FLOW', stateStart = 0, moduleIndex = -1, anchorIndex = -1;
-  const targetCache = {};
-  let capLabel, capText, capBox;
-  const T = REDUCED
-    ? {FLOW:6500, GATHER:2400, HOLD:4200, DISPERSE:1800}
-    : {FLOW:3600, GATHER:1600, HOLD:3200, DISPERSE:1300};
-  const CHARS = [];
-  THEMES.forEach(s => { for (const ch of s) if (ch.trim()) CHARS.push(ch); });
-  const baseSpeed = () => REDUCED ? 0.18 : 0.5;
-
-  class Particle {
-    constructor(ch, x, y, col, user) {
-      this.ch = ch; this.pos = p.createVector(x, y);
-      const a = p.random(p.TWO_PI), s = baseSpeed() * p.random(0.6, 1.3);
-      this.vel = p.createVector(Math.cos(a)*s, Math.sin(a)*s);
-      this.col = col || p.color(p.random() < 0.25 ? p.random(ACCENTS) : '#333333');
-      this.size = user ? p.random(16, 20) : p.random(12, 19);
-      this.user = !!user; this.target = null; this.birth = p.millis();
-      this._jx = 0; this._jy = 0;
-    }
-    flow() {
-      if (p.mouseX > 0 && p.mouseY > 0) {
-        const dx = this.pos.x - p.mouseX, dy = this.pos.y - p.mouseY, d = Math.hypot(dx, dy);
-        if (d < 130 && d > 0.1) { const f = (1 - d/130) * 2.4; this.vel.x += dx/d*f; this.vel.y += dy/d*f; }
-      }
-      if (this.vel.mag() > baseSpeed()) this.vel.mult(0.94);
-      this.pos.add(this.vel);
-      const m = 60;
-      if (this.pos.x < -m) this.pos.x = W + m;
-      if (this.pos.x > W + m) this.pos.x = -m;
-      if (this.pos.y < -m) this.pos.y = H + m;
-      if (this.pos.y > H + m) this.pos.y = -m;
-    }
-    gather() {
-      if (this.target) {
-        this.pos.x = p.lerp(this.pos.x, this.target.x, 0.12);
-        this.pos.y = p.lerp(this.pos.y, this.target.y, 0.12);
-      }
-    }
-    hold() {
-      this.gather();
-      this._jx = 0; this._jy = 0;
-      if (p.mouseX > 0) {
-        const d = p.dist(this.pos.x, this.pos.y, p.mouseX, p.mouseY);
-        if (d < 120) { this._jx = p.random(-2.2, 2.2); this._jy = p.random(-2.2, 2.2); }
-      }
-    }
-    draw() {
-      p.push();
-      p.translate(this.pos.x + this._jx, this.pos.y + this._jy);
-      p.textSize(this.size);
-      if (this.user && p.millis() - this.birth < 1100) {
-        const w = p.textWidth(this.ch);
-        p.noStroke(); p.fill('#FFCC00');
-        p.rect(-w/2 - 3, -this.size/2 - 3, w + 6, this.size + 6);
-      }
-      p.noStroke(); p.fill(this.col); p.textAlign(p.CENTER, p.CENTER);
-      p.text(this.ch, 0, 0);
-      p.pop();
-    }
-  }
-
-  function anchors() {
-    return [
-      {x:W*0.30, y:H*0.42}, {x:W*0.70, y:H*0.40},
-      {x:W*0.33, y:H*0.62}, {x:W*0.68, y:H*0.60}, {x:W*0.50, y:H*0.50}
-    ];
-  }
-
-  function drawFace(g, s) {
-    const k = s/100;
-    g.push(); g.translate(s*0.52, s*0.52); g.scale(1.06);
-    g.noStroke(); g.fill(255); g.beginShape();
-    const pts = [
-      [6,-46],[-16,-40],[-28,-22],[-33,-10],[-29,-4],[-42,7],[-30,12],
-      [-34,17],[-28,30],[-8,41],[0,48],[22,48],[35,22],[41,-4],[30,-38],[6,-46]
-    ];
-    g.curveVertex(pts[0][0]*k, pts[0][1]*k);
-    for (const pt of pts) g.curveVertex(pt[0]*k, pt[1]*k);
-    g.curveVertex(pts[pts.length-1][0]*k, pts[pts.length-1][1]*k);
-    g.endShape(g.CLOSE);
-    g.pop();
-  }
-
-  function getTargets(idx) {
-    const key = idx + '_' + Math.round(W) + '_' + Math.round(H);
-    if (targetCache[key]) return targetCache[key];
-    const mod = MODULES[idx];
-    const gS = Math.floor(Math.min(W, H) * 0.66);
-    const g = p.createGraphics(gS, gS);
-    g.pixelDensity(1); g.background(0); g.noStroke(); g.fill(255);
-    if (mod.type === 'silhouette') {
-      drawFace(g, gS);
-    } else {
-      g.textAlign(g.CENTER, g.CENTER); g.textStyle(g.BOLD);
-      g.textFont(mod.latin ? 'Anton' : 'Noto Sans TC');
-      g.textSize(mod.latin ? gS*0.5 : gS*0.9);
-      g.text(mod.value, gS/2, gS*0.52);
-    }
-    g.loadPixels();
-    const pts = [], step = 7;
-    for (let y = 0; y < gS; y += step)
-      for (let x = 0; x < gS; x += step) {
-        const i = 4 * (y * gS + x);
-        if (g.pixels[i] > 128) pts.push({x: x - gS/2, y: y - gS/2});
-      }
-    for (let i = pts.length - 1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [pts[i],pts[j]]=[pts[j],pts[i]]; }
-    g.remove();
-    targetCache[key] = pts.length ? pts : [{x:0,y:0}];
-    return targetCache[key];
-  }
-
-  function startGather() {
-    moduleIndex = (moduleIndex + 1) % MODULES.length;
-    const pts = getTargets(moduleIndex);
-    anchorIndex = (anchorIndex + 1) % anchors().length;
-    const an = anchors()[anchorIndex];
-    const mod = MODULES[moduleIndex];
-    particles.forEach((pt, i) => {
-      const o = pts[i % pts.length];
-      pt.target = {x: an.x + o.x, y: an.y + o.y};
-      if (!pt.user) pt.col = p.color(p.random(mod.palette));
-    });
-    showCaption(mod);
-    state = 'GATHER'; stateStart = p.millis();
-  }
-  function startDisperse() {
-    particles.forEach(pt => {
-      pt.target = null;
-      const a = p.random(p.TWO_PI), s = baseSpeed() * p.random(3, 6);
-      pt.vel.set(Math.cos(a)*s, Math.sin(a)*s);
-    });
-  }
-  function showCaption(mod) {
-    if (!capBox) return;
-    capLabel.textContent = mod.label; capText.textContent = mod.caption;
-    capBox.classList.add('show');
-  }
-  function hideCaption() { if (capBox) capBox.classList.remove('show'); }
-
-  p.setup = () => {
-    heroEl = document.querySelector('.hero');
-    W = heroEl.offsetWidth; H = heroEl.offsetHeight;
-    const c = p.createCanvas(W, H); c.parent('hero-canvas');
-    p.pixelDensity(Math.min(window.devicePixelRatio || 1, 1.5));
-    p.textFont('Noto Sans TC'); p.textStyle(p.BOLD);
-    capBox = document.getElementById('hero-caption');
-    capLabel = document.getElementById('hero-caption-label');
-    capText = document.getElementById('hero-caption-text');
-    const n = isMobile() ? 180 : 420;
-    for (let i = 0; i < n; i++) particles.push(new Particle(CHARS[i % CHARS.length], p.random(W), p.random(H)));
-    stateStart = p.millis();
-  };
-
-  p.draw = () => {
-    p.clear();
-    const el = p.millis() - stateStart;
-    if (state === 'FLOW') {
-      particles.forEach(pt => { pt.flow(); pt.draw(); });
-      if (el > T.FLOW && fontsReady) startGather();
-    } else if (state === 'GATHER') {
-      particles.forEach(pt => { pt.gather(); pt.draw(); });
-      if (el > T.GATHER) { state = 'HOLD'; stateStart = p.millis(); }
-    } else if (state === 'HOLD') {
-      particles.forEach(pt => { pt.hold(); pt.draw(); });
-      if (el > T.HOLD) { state = 'DISPERSE'; stateStart = p.millis(); startDisperse(); hideCaption(); }
-    } else {
-      particles.forEach(pt => { pt.flow(); pt.draw(); });
-      if (el > T.DISPERSE) { state = 'FLOW'; stateStart = p.millis(); }
-    }
-  };
-
-  p.windowResized = () => {
-    W = heroEl.offsetWidth; H = heroEl.offsetHeight;
-    p.resizeCanvas(W, H);
-    for (const k in targetCache) delete targetCache[k];
-  };
-
-  p.addUserPhrase = (txt) => {
-    const max = isMobile() ? 180 : 420;
-    const col = p.color(p.random(ACCENTS));
-    const chars = [...txt].filter(c => c.trim());
-    chars.forEach(ch => {
-      if (particles.length >= max) {
-        const idx = particles.findIndex(x => !x.user);
-        particles.splice(idx < 0 ? 0 : idx, 1);
-      }
-      const np = new Particle(ch, W*0.2 + p.random(-30,30), H*0.8 + p.random(-20,20), col, true);
-      const a = -p.HALF_PI + p.random(-0.6, 0.6), s = baseSpeed() * p.random(3, 5);
-      np.vel.set(Math.cos(a)*s, Math.sin(a)*s);
-      particles.push(np);
-    });
-  };
-};
-const heroP5 = new p5(heroSketch);
-loopControl(document.querySelector('.hero'), heroP5);
-
-document.getElementById('hero-form').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const input = document.getElementById('hero-input');
-  const val = input.value.trim();
-  if (!val) return;
-  heroP5.addUserPhrase(val);
-  input.value = ''; input.placeholder = '再丟一個卡關也可以 →';
+/* ---- Hero：藤蔓 / 種子生成藝術 ---- */
+Brand.onView(document.querySelector('.hero'), () => (p) => {
+  let W, H, host, seeds = [];
+  const COLS = [TC.build, TC.ask, TC.debate, TC.listen, TC.connect];
+  p.setup = () => { host = document.querySelector('.hero'); W = host.offsetWidth; H = host.offsetHeight;
+    const c = p.createCanvas(W, H); c.parent('hero-canvas'); p.pixelDensity(Math.min(window.devicePixelRatio||1,1.5));
+    const n = isMobile()?14:28; for (let i=0;i<n;i++) seeds.push({x:p.random(W),y:p.random(H),r:p.random(5,13),sp:p.random(.15,.6),sw:p.random(p.TWO_PI),c:p.random(COLS)}); };
+  p.draw = () => { p.clear();
+    for (const s of seeds){ s.y-=s.sp*(REDUCED?0.3:1); s.sw+=0.02; s.x+=Math.sin(s.sw)*0.4; if(s.y<-20){s.y=H+20;s.x=p.random(W);}
+      const col=p.color(s.c); col.setAlpha(46); p.noStroke(); p.fill(col);
+      p.push(); p.translate(s.x,s.y); p.rotate(s.sw*0.3); p.rectMode(p.CENTER); p.rect(0,0,s.r*2,s.r*2,s.r,s.r,s.r,s.r*0.4); p.pop();
+      p.stroke(col); p.strokeWeight(1.4); p.noFill(); p.line(s.x,s.y+s.r,s.x,s.y+s.r+8); } };
+  p.windowResized = () => { W=host.offsetWidth; H=host.offsetHeight; p.resizeCanvas(W,H); };
 });
 
-/* Live Participants 假數字 */
+/* Live 假數字 + hero 分數同步 */
+(() => { const el=document.getElementById('live-count'); let n=128;
+  const tick=()=>{ n=Math.max(96,Math.min(214,n+Math.round((Math.random()-0.42)*5))); el.textContent=n; setTimeout(tick,1500+Math.random()*2500); }; tick(); })();
+document.getElementById('hero-score').textContent = Brand.state.get().score;
+
+/* ---- 招牌互動：思辨方塊（共用 Brand.deliberationGame）---- */
+Brand.deliberationGame(document.getElementById('game-mount'), {
+  onScore: (s) => { document.getElementById('score-num').textContent = s; document.getElementById('hero-score').textContent = s; }
+});
+document.getElementById('score-num').textContent = Brand.state.get().score;
+
+/* ---- 便利貼牆：議題星圖 + scroll 橫向 ---- */
+const wallInst = Brand.onView(document.getElementById('wall'), () => (p) => {
+  let W,H,nodes=[],scrollX=0,SPAN;
+  p.setup=()=>{ const st=document.querySelector('.wall__sticky'); W=st.offsetWidth;H=st.offsetHeight;SPAN=W*1.4;
+    const c=p.createCanvas(W,H); c.parent('wall-canvas'); p.pixelDensity(Math.min(window.devicePixelRatio||1,1.5));
+    const n=isMobile()?28:54; for(let i=0;i<n;i++) nodes.push({x:p.random(SPAN),y:p.random(H),r:p.random(1.5,3.2),tw:p.random(p.TWO_PI)}); };
+  const wrapX=(x)=>{ let v=(x-scrollX*0.25)%SPAN; if(v<0)v+=SPAN; return v; };
+  p.draw=()=>{ p.clear(); for(const nd of nodes) nd.tw+=0.03; p.strokeWeight(1);
+    for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){ const a=nodes[i],b=nodes[j]; const ax=wrapX(a.x),bx=wrapX(b.x),d=p.dist(ax,a.y,bx,b.y);
+      if(d<88){ p.stroke(224,169,46, 30*(1-d/88)); p.line(ax,a.y,bx,b.y);} }
+    p.noStroke(); for(const nd of nodes){ const x=wrapX(nd.x),a=110+Math.sin(nd.tw)*80; p.fill(192,57,43,a*0.5); p.circle(x,nd.y,nd.r*2.4); p.fill(243,238,226,a); p.circle(x,nd.y,nd.r); } };
+  p._setScroll=(v)=>{ scrollX=v; };
+  p.windowResized=()=>{ const st=document.querySelector('.wall__sticky'); W=st.offsetWidth;H=st.offsetHeight;SPAN=W*1.4; p.resizeCanvas(W,H); };
+});
 (() => {
-  const el = document.getElementById('live-count');
-  let n = 128;
-  const tick = () => {
-    n = Math.max(96, Math.min(214, n + Math.round((Math.random() - 0.42) * 5)));
-    el.textContent = n;
-    setTimeout(tick, 1500 + Math.random() * 2500);
-  };
-  tick();
+  const wall=document.getElementById('wall'), track=document.getElementById('wall-track'), bar=document.getElementById('wall-progress');
+  let ticking=false;
+  const update=()=>{ ticking=false; const rect=wall.getBoundingClientRect(); const total=wall.offsetHeight-window.innerHeight; if(total<=0)return;
+    const prog=Math.min(1,Math.max(0,-rect.top/total)); const maxX=Math.max(0,track.scrollWidth-window.innerWidth+48);
+    if(!REDUCED) track.style.transform=`translateX(${-prog*maxX}px)`; bar.style.width=(prog*100)+'%'; if(wallInst&&wallInst._setScroll) wallInst._setScroll(prog*maxX); };
+  const onScroll=()=>{ if(!ticking){ticking=true;requestAnimationFrame(update);} };
+  window.addEventListener('scroll',onScroll,{passive:true}); window.addEventListener('resize',onScroll); update();
 })();
 
-/* ============================================================
-   2. BENTO 生成紋理（思=問號粒子 / 辨=節點碰撞 / 行=箭頭流）
-   ============================================================ */
-function makeBentoSketch(type, parentId) {
-  return (p) => {
-    let W, H, host, items = [];
-    let speedMul = 1, hue = null;
-    const COLORS = { think:'#FFCC00', debate:'#FF2A7A', act:'#00D09E' };
-    function spawn(i, n) {
-      if (type === 'debate') return { x:p.random(W), y:p.random(H), vx:p.random(-.5,.5), vy:p.random(-.5,.5), group:i<n/2?0:1 };
-      return { x:p.random(W), y:p.random(H), sp:p.random(.3,1), sz:p.random(11,20), rot:p.random(-.3,.3), ch:type==='act'?'➜':'？' };
-    }
-    p.setup = () => {
-      host = document.getElementById(parentId).parentElement;
-      W = host.offsetWidth; H = host.offsetHeight;
-      const c = p.createCanvas(W, H); c.parent(parentId);
-      p.pixelDensity(Math.min(window.devicePixelRatio || 1, 1.5));
-      p.textFont('Noto Sans TC'); p.textStyle(p.BOLD);
-      const n = isMobile() ? 16 : 26;
-      for (let i = 0; i < n; i++) items.push(spawn(i, n));
-      host.addEventListener('mouseenter', () => { speedMul = 2.6; hue = p.color(COLORS[type]); hue.setAlpha(140); });
-      host.addEventListener('mouseleave', () => { speedMul = 1; hue = null; });
-    };
-    p.draw = () => {
-      p.clear();
-      if (type === 'debate') {
-        for (const it of items) {
-          it.x += it.vx * speedMul; it.y += it.vy * speedMul;
-          if (it.x<0||it.x>W) it.vx*=-1; if (it.y<0||it.y>H) it.vy*=-1;
-        }
-        p.strokeWeight(1);
-        for (let i=0;i<items.length;i++) for (let j=i+1;j<items.length;j++){
-          const a=items[i], b=items[j];
-          if (a.group!==b.group){ const d=p.dist(a.x,a.y,b.x,b.y); if (d<72){ const c=hue||p.color(17,17,17,50); p.stroke(c); p.line(a.x,a.y,b.x,b.y);} }
-        }
-        p.noStroke();
-        for (const it of items){ p.fill(it.group ? (hue||p.color(17,17,17,80)) : p.color(122,31,31,90)); p.circle(it.x,it.y,6); }
-      } else {
-        p.noStroke();
-        for (const it of items) {
-          if (type === 'act') it.x += it.sp * 1.4 * speedMul; else it.y -= it.sp * speedMul;
-          if (it.x > W + 20) it.x = -20;
-          if (it.y < -20) it.y = H + 20;
-          p.push(); p.translate(it.x, it.y); p.rotate(it.rot);
-          p.textSize(it.sz); p.fill(hue || p.color(17,17,17,30));
-          p.text(it.ch, 0, 0); p.pop();
-        }
-      }
-    };
-    p.windowResized = () => { W = host.offsetWidth; H = host.offsetHeight; p.resizeCanvas(W, H); };
-  };
-}
-const bentoInstances = [
-  new p5(makeBentoSketch('think','bg-think')),
-  new p5(makeBentoSketch('debate','bg-debate')),
-  new p5(makeBentoSketch('act','bg-act'))
+/* ---- 型態雷達（5 主型態 + 拖曳，用 Brand.radar helper）---- */
+const TYPES = [
+  { id:'explorer', zh:'探索者', en:'EXPLORER',   color:TC.ask,     desc:'想知道 AI 還能怎麼用。你的好奇心是派對的燃料。', v:[1.0,0.45,0.55,0.5,0.4],  rec:['新工具試玩場','AI 應用靈感圈','生活自動化桌'] },
+  { id:'analyst',  zh:'分析者', en:'ANALYST',    color:TC.listen,  desc:'先聽再拆，愛看數據與反例。你讓討論不會失速。',   v:[0.5,0.9,0.7,0.4,0.55], rec:['資訊識讀圈','AI 倫理辯論場','風險評估桌'] },
+  { id:'connector',zh:'連結者', en:'CONNECTOR',  color:TC.connect, desc:'擅長串人串資源。你讓對的問題遇上對的人。',       v:[0.55,0.4,0.5,0.6,1.0], rec:['社群共創場','跨界合作圈','資源媒合桌'] },
+  { id:'builder',  zh:'實作者', en:'BUILDER',    color:TC.build,   desc:'已經在做工具或流程。你的經驗是最扎實的素材。',   v:[0.55,0.5,0.5,1.0,0.5], rec:['工作流交換場','Prompt 工程圈','自動化桌'] },
+  { id:'deepdiver',zh:'深潛者', en:'DEEP DIVER', color:TC.debate,  desc:'想把議題拆到本質。你問出那個沒人敢問的為什麼。', v:[0.45,0.7,1.0,0.4,0.4], rec:['AI 哲學深潛場','教育本質圈','人機關係桌'] }
 ];
-loopControl(document.getElementById('how'), bentoInstances);
+const TYPE_AXES = ['探索','分析','深度','實作','連結'];
+let activeType = 0;
 
-/* ============================================================
-   3. FOUNDERS — 圖片 cross-fade + 雷達 morph overlay
-   ============================================================ */
-const FOUNDERS = [
-  {key:'Bogi',  img:'founder-bogi.png',  role:'CO-FOUNDER / CEO', meta:'result // strategic driver',
-   domain:'Vision & Leadership', traits:['clear-minded','optimistic','decisive'], line:'把散落的潛力，變成方向。',
-   v:[0.95,0.60,0.65,0.90,0.72]},
-  {key:'Kevin', img:'founder-kevin.png', role:'CO-FOUNDER / CMO', meta:'result // culture amplifier',
-   domain:'Brand & Growth', traits:['insightful','connective','brand-sensitive'], line:'把對話，變成動能。',
-   v:[0.85,0.55,0.70,0.68,0.95]},
-  {key:'Jean',  img:'founder-jean.png',  role:'CO-FOUNDER / COO', meta:'result // execution orchestrator',
-   domain:'Operations & Community', traits:['steady','attentive','people-centered'], line:'把意圖，變成落實。',
-   v:[0.68,0.66,0.60,0.95,0.90]},
-  {key:'Buzz',  img:'founder-buzz.png',  role:'CO-FOUNDER / CTO', meta:'result // architect mind',
-   domain:'Technology & Systems', traits:['structured','curious','exacting'], line:'把不確定，變成系統。',
-   v:[0.60,0.95,0.90,0.70,0.62]}
-];
-const FOUNDER_AXES = ['VISION','SYSTEMS','DEPTH','ACTION','COMMUNITY'];
-let founderActive = 0, founderPause = 0;
+function hexA(hex,a){ const n=parseInt(hex.slice(1),16); return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`; }
 
-(() => {
-  const stage = document.getElementById('founders-stage');
-  const tabs = document.getElementById('founders-tabs');
-  FOUNDERS.forEach((f, i) => {
-    const img = document.createElement('img');
-    img.className = 'founders__img' + (i===0 ? ' active' : '');
-    img.src = encodeURI(f.img); img.alt = f.key + ' 創辦人雷達圖'; img.loading = 'lazy';
-    stage.insertBefore(img, stage.firstChild);
-    const b = document.createElement('button');
-    b.className = 'founders__tab' + (i===0 ? ' active' : '');
-    b.textContent = f.key;
-    b.addEventListener('click', () => { setFounder(i); founderPause = performance.now() + 6000; });
-    tabs.appendChild(b);
-  });
-})();
-
-function setFounder(i) {
-  founderActive = i;
-  const f = FOUNDERS[i];
-  document.querySelectorAll('.founders__img').forEach((el, j) => {
-    el.classList.toggle('active', j === i);
-    if (j === i && !REDUCED) { el.classList.remove('glitch'); void el.offsetWidth; el.classList.add('glitch'); }
-  });
-  document.querySelectorAll('.founders__tab').forEach((el, j) => el.classList.toggle('active', j === i));
-  document.getElementById('f-name').textContent = f.key;
-  document.getElementById('f-role').textContent = f.role;
-  document.getElementById('f-meta').textContent = f.meta;
-  document.getElementById('f-domain').textContent = f.domain;
-  document.getElementById('f-line').textContent = f.line;
-  document.getElementById('founders-idx').textContent = ('0'+(i+1)) + ' / 0' + FOUNDERS.length;
-  const tr = document.getElementById('f-traits'); tr.innerHTML = '';
-  f.traits.forEach(t => { const s = document.createElement('span'); s.className='founders__trait'; s.textContent = t; tr.appendChild(s); });
-}
-setFounder(0);
-
-setInterval(() => {
-  if (REDUCED) return;
-  if (performance.now() < founderPause) return;
-  setFounder((founderActive + 1) % FOUNDERS.length);
-}, 2500);
-
-const foundersRadarSketch = (p) => {
-  let cur = FOUNDERS[0].v.slice(), stageEl, S;
-  const axisPoint = (i, r) => { const a = -p.HALF_PI + i*p.TWO_PI/5; return { x:S/2 + Math.cos(a)*r, y:S/2 + Math.sin(a)*r }; };
-  p.setup = () => {
-    stageEl = document.getElementById('founders-stage');
-    S = stageEl.offsetWidth;
-    const c = p.createCanvas(S, S); c.parent('founders-canvas');
-    p.pixelDensity(Math.min(window.devicePixelRatio || 1, 1.5));
-    p.textFont('IBM Plex Mono');
-  };
-  p.draw = () => {
-    p.clear();
-    const R = S * 0.30, tgt = FOUNDERS[founderActive].v;
-    for (let i=0;i<5;i++) cur[i] = p.lerp(cur[i], tgt[i], 0.10);
-    p.noFill(); p.stroke(255,255,255,40); p.strokeWeight(1);
-    for (let ring=1; ring<=3; ring++){ p.beginShape(); for(let i=0;i<5;i++){ const pt=axisPoint(i, R*ring/3); p.vertex(pt.x,pt.y);} p.endShape(p.CLOSE); }
-    p.stroke(255,255,255,32);
-    for (let i=0;i<5;i++){ const pt=axisPoint(i,R); p.line(S/2,S/2,pt.x,pt.y); }
-    p.fill(122,31,31,55); p.stroke(200,45,45,230); p.strokeWeight(2.5);
-    p.beginShape(); for(let i=0;i<5;i++){ const pt=axisPoint(i, R*cur[i]); p.vertex(pt.x,pt.y);} p.endShape(p.CLOSE);
-    p.textAlign(p.CENTER,p.CENTER); p.textSize(Math.max(8, S*0.021));
-    for (let i=0;i<5;i++){
-      const pt = axisPoint(i, R*cur[i]);
-      p.noStroke(); p.fill('#FFCC00'); p.circle(pt.x, pt.y, 6);
-      const lp = axisPoint(i, R + S*0.055);
-      p.fill(255,255,255,180); p.text(FOUNDER_AXES[i], lp.x, lp.y);
-    }
-  };
-  p.windowResized = () => { S = stageEl.offsetWidth; p.resizeCanvas(S, S); };
-};
-const foundersRadarP5 = new p5(foundersRadarSketch);
-loopControl(document.getElementById('founders'), foundersRadarP5);
-
-/* ============================================================
-   4. 便利貼牆 — 議題星圖背景 + scroll 橫向捲動
-   ============================================================ */
-const wallStarSketch = (p) => {
-  let W, H, nodes = [], scrollX = 0, SPAN;
-  p.setup = () => {
-    const st = document.querySelector('.wall__sticky');
-    W = st.offsetWidth; H = st.offsetHeight; SPAN = W * 1.4;
-    const c = p.createCanvas(W, H); c.parent('wall-canvas');
-    p.pixelDensity(Math.min(window.devicePixelRatio || 1, 1.5));
-    const n = isMobile() ? 34 : 64;
-    for (let i=0;i<n;i++) nodes.push({ x:p.random(SPAN), y:p.random(H), r:p.random(1.5,3.5), tw:p.random(p.TWO_PI) });
-  };
-  const wrapX = (x) => { let v = (x - scrollX*0.25) % SPAN; if (v < 0) v += SPAN; return v; };
-  p.draw = () => {
-    p.clear();
-    for (const nd of nodes) nd.tw += 0.03;
-    p.strokeWeight(1);
-    for (let i=0;i<nodes.length;i++) for (let j=i+1;j<nodes.length;j++){
-      const a=nodes[i], b=nodes[j];
-      const ax=wrapX(a.x), bx=wrapX(b.x), d=p.dist(ax,a.y,bx,b.y);
-      if (d<90){ p.stroke(255,255,255, 26*(1-d/90)); p.line(ax,a.y,bx,b.y); }
-    }
-    p.noStroke();
-    for (const nd of nodes){
-      const x = wrapX(nd.x), a = 120 + Math.sin(nd.tw)*80;
-      p.fill(255,45,45, a*0.5); p.circle(x, nd.y, nd.r*2.4);
-      p.fill(255,253,245, a); p.circle(x, nd.y, nd.r);
-    }
-  };
-  p.setScroll = (v) => { scrollX = v; };
-  p.windowResized = () => {
-    const st = document.querySelector('.wall__sticky');
-    W = st.offsetWidth; H = st.offsetHeight; SPAN = W * 1.4; p.resizeCanvas(W, H);
-  };
-};
-const wallStarP5 = new p5(wallStarSketch);
-loopControl(document.getElementById('wall'), wallStarP5);
-
-(() => {
-  const wall = document.getElementById('wall');
-  const track = document.getElementById('wall-track');
-  const bar = document.getElementById('wall-progress');
-  let ticking = false;
-  const update = () => {
-    ticking = false;
-    const rect = wall.getBoundingClientRect();
-    const total = wall.offsetHeight - window.innerHeight;
-    if (total <= 0) return;
-    const progress = Math.min(1, Math.max(0, -rect.top / total));
-    const maxX = Math.max(0, track.scrollWidth - window.innerWidth + 48);
-    if (!REDUCED) track.style.transform = `translateX(${-progress * maxX}px)`;
-    bar.style.width = (progress * 100) + '%';
-    if (wallStarP5.setScroll) wallStarP5.setScroll(progress * maxX);
-  };
-  const onScroll = () => { if (!ticking){ ticking = true; requestAnimationFrame(update); } };
-  window.addEventListener('scroll', onScroll, { passive:true });
-  window.addEventListener('resize', onScroll);
-  update();
-})();
-
-/* ============================================================
-   5. 雷達選擇器 — p5 生成、可拖曳頂點即時變形
-   ============================================================ */
-const ROLES = [
-  { id:'explorer', zh:'探索者', en:'EXPLORER', color:'#FFCC00', dark:false, desc:'想知道 AI 還能怎麼用。你的好奇心就是派對的燃料。',
-    values:[1.0,0.45,0.55,0.5,0.4], tables:['新工具試玩場','AI 應用靈感圈','生活自動化議題桌'] },
-  { id:'skeptic', zh:'懷疑者', en:'SKEPTIC', color:'#FF2D2D', dark:true, desc:'對 AI 有問題、有警覺。你的質疑讓討論不會失速。',
-    values:[0.4,1.0,0.35,0.45,0.7], tables:['AI 倫理辯論場','版權與風險圈','資訊識讀議題桌'] },
-  { id:'builder', zh:'實作者', en:'BUILDER', color:'#00D09E', dark:false, desc:'已經在做工具或流程。你的經驗是最扎實的討論素材。',
-    values:[0.6,0.35,1.0,0.5,0.55], tables:['工作流交換場','Prompt 工程圈','品牌自動化議題桌'] },
-  { id:'connector', zh:'連結者', en:'CONNECTOR', color:'#FF2A7A', dark:true, desc:'擅長串人串資源。你讓對的問題遇上對的人。',
-    values:[0.55,0.4,0.5,1.0,0.35], tables:['社群共創場','跨界合作圈','資源媒合議題桌'] },
-  { id:'deepdiver', zh:'深潛者', en:'DEEP DIVER', color:'#0055FF', dark:true, desc:'想把議題拆到本質。你負責問出那個沒人敢問的「為什麼」。',
-    values:[0.45,0.6,0.4,0.35,1.0], tables:['AI 哲學深潛場','教育本質圈','人機關係議題桌'] }
-];
-let activeRole = 0;
-
-const selectorSketch = (p) => {
-  let cur = ROLES[0].values.slice(), targetVals = ROLES[0].values.slice();
-  let wrap, dragging = -1;
-  const LAB = ['探索','懷疑','實作','連結','深潛'];
-  const size = () => { const w = wrap ? wrap.clientWidth - 24 : 440; return Math.max(280, Math.min(500, w)); };
-  const axisPoint = (i, r) => { const a = -p.HALF_PI + i*p.TWO_PI/5; return { x:p.width/2 + Math.cos(a)*r, y:p.height/2 + Math.sin(a)*r }; };
-  p.setup = () => {
-    wrap = document.querySelector('.radar__canvas-wrap');
-    const s = size(); const c = p.createCanvas(s, s); c.parent('radar-canvas');
-    p.pixelDensity(Math.min(window.devicePixelRatio || 1, 2));
-    p.textFont('Noto Sans TC');
-  };
-  p.draw = () => {
-    p.clear();
-    const R = p.width * 0.34, role = ROLES[activeRole];
-    for (let i=0;i<5;i++) if (i !== dragging) cur[i] = p.lerp(cur[i], targetVals[i], 0.12);
-    p.stroke(17,17,17,60); p.strokeWeight(1); p.noFill();
-    for (let ring=1; ring<=4; ring++){ p.beginShape(); for(let i=0;i<5;i++){ const pt=axisPoint(i, R*ring/4); p.vertex(pt.x,pt.y);} p.endShape(p.CLOSE); }
-    p.stroke(17,17,17,110); p.strokeWeight(2);
-    for (let i=0;i<5;i++){ const pt=axisPoint(i,R); p.line(p.width/2,p.height/2,pt.x,pt.y); }
-    const col = p.color(role.color);
-    p.noStroke(); p.fill(17,17,17,200);
-    p.beginShape(); for(let i=0;i<5;i++){ const pt=axisPoint(i, R*cur[i]); p.vertex(pt.x+6,pt.y+6);} p.endShape(p.CLOSE);
-    p.fill(p.red(col),p.green(col),p.blue(col),215); p.stroke(17); p.strokeWeight(3.5);
-    p.beginShape(); for(let i=0;i<5;i++){ const pt=axisPoint(i, R*cur[i]); p.vertex(pt.x,pt.y);} p.endShape(p.CLOSE);
+const typeInst = Brand.onView(document.getElementById('types'), () => (p) => {
+  let cur=TYPES[0].v.slice(), target=TYPES[0].v.slice(), wrap, dragging=-1;
+  const size=()=>{ const w=wrap?wrap.clientWidth-32:420; return Math.max(280,Math.min(460,w)); };
+  const pt=(i,r)=>{ const a=-p.HALF_PI+i*p.TWO_PI/5; return {x:p.width/2+Math.cos(a)*r,y:p.height/2+Math.sin(a)*r}; };
+  p.setup=()=>{ wrap=document.querySelector('#types .radar-wrap'); const s=size(); const c=p.createCanvas(s,s); c.parent('type-canvas'); p.pixelDensity(Math.min(window.devicePixelRatio||1,2)); };
+  p.draw=()=>{ p.clear(); const R=p.width*0.34, t=TYPES[activeType];
+    for(let i=0;i<5;i++) if(i!==dragging) cur[i]=p.lerp(cur[i],target[i],0.12);
+    Brand.radar(p.drawingContext, cur, { size:p.width, axes:TYPE_AXES, stroke:t.color, fill:hexA(t.color,0.22), dot:t.color, showLabels:false });
     p.textAlign(p.CENTER,p.CENTER);
-    for (let i=0;i<5;i++){
-      const tip = axisPoint(i, R*cur[i]);
-      const hov = p.dist(p.mouseX,p.mouseY,tip.x,tip.y) < 18 || dragging===i;
-      p.stroke(17); p.strokeWeight(2.5); p.fill(hov ? '#FFCC00' : '#FFFDF5');
-      p.rectMode(p.CENTER); p.square(tip.x, tip.y, hov ? 18 : 12); p.rectMode(p.CORNER);
-      const lab = axisPoint(i, R + p.width*0.085), isA = i === activeRole;
-      p.textSize(isA ? p.width*0.042 : p.width*0.036); p.textStyle(p.BOLD);
-      const tw = p.textWidth(LAB[i]) + 16, th = (isA?p.width*0.042:p.width*0.036) + 12;
-      p.noStroke(); p.fill(17,17,17, isA?255:150); p.rect(lab.x-tw/2+3, lab.y-th/2+3, tw, th);
-      p.fill(isA ? ROLES[i].color : '#FFFDF5'); p.stroke(17); p.strokeWeight(2); p.rect(lab.x-tw/2, lab.y-th/2, tw, th);
-      p.noStroke(); p.fill(isA && ROLES[i].dark ? '#FFFDF5' : '#111'); p.text(LAB[i], lab.x, lab.y+1);
-    }
-    let onHandle = false;
-    for (let i=0;i<5;i++){ const tip=axisPoint(i,R*cur[i]); if (p.dist(p.mouseX,p.mouseY,tip.x,tip.y)<18) onHandle=true; }
-    p.cursor(onHandle || dragging>=0 ? p.HAND : p.ARROW);
-  };
-  p.mousePressed = () => {
-    if (p.mouseX<0||p.mouseX>p.width||p.mouseY<0||p.mouseY>p.height) return;
-    const R = p.width*0.34;
-    for (let i=0;i<5;i++){
-      const tip = axisPoint(i, R*cur[i]), lab = axisPoint(i, R + p.width*0.085);
-      if (p.dist(p.mouseX,p.mouseY,tip.x,tip.y) < 20) { dragging = i; return; }
-      if (p.dist(p.mouseX,p.mouseY,lab.x,lab.y) < p.width*0.075) { selectRole(i); return; }
-    }
-  };
-  p.mouseDragged = () => {
-    if (dragging < 0) return;
-    const R = p.width*0.34, d = p.dist(p.mouseX,p.mouseY,p.width/2,p.height/2);
-    cur[dragging] = p.constrain(d/R, 0.12, 1); targetVals[dragging] = cur[dragging];
-  };
-  p.mouseReleased = () => { dragging = -1; };
-  p.setRole = (i) => { targetVals = ROLES[i].values.slice(); };
-  p.windowResized = () => { const s = size(); p.resizeCanvas(s, s); };
-};
-const selectorP5 = new p5(selectorSketch);
-loopControl(document.getElementById('radar'), selectorP5);
-
-const roleBtnWrap = document.getElementById('role-buttons');
-ROLES.forEach((r, i) => {
-  const b = document.createElement('button');
-  b.className = 'role-btn'; b.style.setProperty('--rc', r.color);
-  b.innerHTML = `<span class="chip"></span>${r.en} ${r.zh}`;
-  b.addEventListener('click', () => selectRole(i));
-  roleBtnWrap.appendChild(b);
+    for(let i=0;i<5;i++){ const tp=pt(i,R*cur[i]); const hov=p.dist(p.mouseX,p.mouseY,tp.x,tp.y)<18||dragging===i;
+      p.stroke('#FFFDF6'); p.strokeWeight(3); p.fill(hov?'#E0A92E':t.color); p.circle(tp.x,tp.y,hov?20:14);
+      const lp=pt(i,R+p.width*0.09), isA=i===activeType; p.noStroke(); p.textStyle(p.BOLD); p.textSize(p.width*0.04);
+      const tw=p.textWidth(TYPE_AXES[i])+16, th=p.width*0.04+12;
+      p.fill(isA?t.color:'#FFFDF6'); p.stroke(216,207,189); p.strokeWeight(1); p.rect(lp.x-tw/2,lp.y-th/2,tw,th,9);
+      p.noStroke(); p.fill(isA?'#FFFDF6':'#5B5348'); p.text(TYPE_AXES[i],lp.x,lp.y); }
+    let onH=false; for(let i=0;i<5;i++){const tp=pt(i,R*cur[i]); if(p.dist(p.mouseX,p.mouseY,tp.x,tp.y)<18)onH=true;} p.cursor(onH||dragging>=0?p.HAND:p.ARROW); };
+  p.mousePressed=()=>{ if(p.mouseX<0||p.mouseX>p.width||p.mouseY<0||p.mouseY>p.height)return; const R=p.width*0.34;
+    for(let i=0;i<5;i++){ const tp=pt(i,R*cur[i]), lp=pt(i,R+p.width*0.09); if(p.dist(p.mouseX,p.mouseY,tp.x,tp.y)<20){dragging=i;return;} if(p.dist(p.mouseX,p.mouseY,lp.x,lp.y)<p.width*0.08){selectType(i);return;} } };
+  p.mouseDragged=()=>{ if(dragging<0)return; const R=p.width*0.34, d=p.dist(p.mouseX,p.mouseY,p.width/2,p.height/2); cur[dragging]=p.constrain(d/R,0.12,1); target[dragging]=cur[dragging]; };
+  p.mouseReleased=()=>{ dragging=-1; };
+  p._setType=(i)=>{ target=TYPES[i].v.slice(); };
+  p.windowResized=()=>{ const s=size(); p.resizeCanvas(s,s); };
 });
-function selectRole(i) {
-  activeRole = i; const r = ROLES[i];
-  if (selectorP5.setRole) selectorP5.setRole(i);
-  document.querySelectorAll('.role-btn').forEach((b, j) => {
-    b.classList.toggle('active', j === i);
-    b.classList.toggle('on-dark', j === i && ROLES[j].dark);
-  });
-  document.documentElement.style.setProperty('--role-accent', r.color);
-  document.getElementById('result-zh').textContent = r.zh;
-  document.getElementById('result-en').textContent = r.en;
-  document.getElementById('result-en').style.color = r.dark ? '#FFFDF5' : '#111111';
-  document.getElementById('result-desc').textContent = r.desc;
-  const tables = document.getElementById('result-tables'); tables.innerHTML = '';
-  r.tables.forEach(t => { const c = document.createElement('span'); c.className='radar__table-chip'; c.textContent=t; tables.appendChild(c); });
-}
-selectRole(0);
+const typeRoles=document.getElementById('type-roles');
+TYPES.forEach((t,i)=>{ const b=document.createElement('button'); b.className='type-btn'; b.style.setProperty('--rc',t.color);
+  b.innerHTML=`<span class="chip__dot"></span>${t.en} ${t.zh}`; b.addEventListener('click',()=>selectType(i)); typeRoles.appendChild(b); });
+function selectType(i){ activeType=i; const t=TYPES[i]; if(typeInst&&typeInst._setType) typeInst._setType(i);
+  document.querySelectorAll('.type-btn').forEach((b,j)=>b.classList.toggle('is-active',j===i));
+  document.documentElement.style.setProperty('--role-accent',t.color);
+  document.getElementById('type-zh').textContent=t.zh; document.getElementById('type-en').textContent=t.en; document.getElementById('type-desc').textContent=t.desc;
+  const rec=document.getElementById('type-rec'); rec.innerHTML=''; t.rec.forEach(r=>{ const c=document.createElement('span'); c.className='chip'; c.textContent=r; rec.appendChild(c); }); }
+selectType(0);
 
-/* ============================================================
-   6. JOIN CTA — 程式碼粒子場 + 點擊爆破成紅節點
-   ============================================================ */
-const ctaSketch = (p) => {
-  let W, H, host, drops = [], bursts = [];
-  const GLYPHS = ['0','1','思','辨','A','I','?','✦','人','慾'];
-  p.setup = () => {
-    host = document.querySelector('.cta');
-    W = host.offsetWidth; H = host.offsetHeight;
-    const c = p.createCanvas(W, H); c.parent('cta-canvas');
-    p.pixelDensity(Math.min(window.devicePixelRatio || 1, 1.5));
-    p.textFont('IBM Plex Mono'); p.textAlign(p.CENTER,p.CENTER);
-    const n = isMobile() ? 34 : 60;
-    for (let i=0;i<n;i++) drops.push({ x:p.random(W), y:p.random(H), sp:p.random(.4,1.6), sz:p.random(11,20), ch:p.random(GLYPHS), a:p.random(20,70) });
-  };
-  p.draw = () => {
-    p.clear();
-    for (const d of drops) {
-      d.y += d.sp * (REDUCED ? 0.3 : 1);
-      if (d.y > H + 20) { d.y = -20; d.x = p.random(W); d.ch = p.random(GLYPHS); }
-      p.noStroke(); p.fill(0, 208, 158, d.a);
-      p.textSize(d.sz); p.text(d.ch, d.x, d.y);
-    }
-    for (let i=bursts.length-1;i>=0;i--){
-      const b = bursts[i];
-      b.x += b.vx; b.y += b.vy; b.vy += 0.18; b.life -= 0.02;
-      p.push(); p.translate(b.x, b.y); p.rotate(b.rot); b.rot += 0.2;
-      p.noStroke(); p.fill(p.red(b.c), p.green(b.c), p.blue(b.c), 255*Math.max(0,b.life));
-      p.rectMode(p.CENTER); p.square(0,0,b.sz); p.pop();
-      if (b.life <= 0) bursts.splice(i,1);
-    }
-  };
-  p.burst = (x, y) => {
-    const cols = ['#FF2D2D','#FF2A7A','#FFCC00','#0055FF','#FFFDF5'];
-    const n = isMobile() ? 26 : 44;
-    for (let i=0;i<n;i++){
-      const a = p.random(p.TWO_PI), s = p.random(3, 11);
-      bursts.push({ x, y, vx:Math.cos(a)*s, vy:Math.sin(a)*s - 3, sz:p.random(6,16), rot:p.random(p.TWO_PI), life:1, c:p.color(p.random(cols)) });
-    }
-  };
-  p.windowResized = () => { W = host.offsetWidth; H = host.offsetHeight; p.resizeCanvas(W, H); };
-};
-const ctaP5 = new p5(ctaSketch);
-loopControl(document.getElementById('join'), ctaP5);
+/* ---- 採集隊 teaser：5 隻 mascot ---- */
+(() => { const crew=document.getElementById('crew'); ['ask','listen','debate','build','connect'].forEach(type=>{
+  const wrap=document.createElement('div'); wrap.className='mascot-chip';
+  const m=document.createElement('div'); Brand.mascot(m,type); wrap.appendChild(m);
+  const meta=Brand.mascotMeta[type]; const nm=document.createElement('div'); nm.className='mascot-chip__name'; nm.textContent=meta.name; wrap.appendChild(nm);
+  const tg=document.createElement('div'); tg.className='mascot-chip__tag'; tg.textContent=meta.tag; wrap.appendChild(tg);
+  crew.appendChild(wrap); }); })();
 
+/* ---- 創辦人 teaser：四卡（ASCII 優先 + onerror 中文名 fallback）---- */
 (() => {
-  const txt = 'THINK ✦ DEBATE ✦ EVOLVE ✦ REAL TALK ✦ REAL IMPACT ✦ ';
-  const r = txt.repeat(6);
-  document.getElementById('marquee-top').textContent = r + r;
-  document.getElementById('marquee-bottom').textContent = r + r;
+  const FOUNDERS=[ {key:'Bogi',role:'CO-FOUNDER / CEO'},{key:'Kevin',role:'CO-FOUNDER / CMO'},{key:'Jean',role:'CO-FOUNDER / COO'},{key:'Buzz',role:'CO-FOUNDER / CTO'} ];
+  const box=document.getElementById('founders-teaser');
+  FOUNDERS.forEach(f=>{ const a=document.createElement('a'); a.href='about.html'; a.className='founder-card';
+    const img=document.createElement('img'); img.className='founder-card__img'; img.alt=f.key+' 創辦人'; img.loading='lazy';
+    img.src='founder-'+f.key.toLowerCase()+'.png'; img.onerror=function(){ this.onerror=null; this.src=encodeURI('創辦人雷達圖_'+f.key+'.png'); };
+    a.appendChild(img); const body=document.createElement('div'); body.className='founder-card__body';
+    body.innerHTML=`<div class="founder-card__name">${f.key}</div><div class="founder-card__role">${f.role}</div>`; a.appendChild(body); box.appendChild(a); });
 })();
 
-(() => {
-  const btn = document.getElementById('arcade-btn');
-  btn.addEventListener('click', () => {
-    if (navigator.vibrate) navigator.vibrate([40,30,60]);
-    btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake');
-    const cv = document.querySelector('#cta-canvas canvas');
-    if (cv && ctaP5.burst) {
-      const cr = cv.getBoundingClientRect(), r = btn.getBoundingClientRect();
-      ctaP5.burst(r.left + r.width/2 - cr.left, r.top + r.height/2 - cr.top);
-    }
-  });
-})();
-
-/* ============================================================
-   字型就緒後才允許 Hero glyph 取樣（避免取到 fallback 字型）
-   ============================================================ */
-if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(() => { fontsReady = true; });
-  setTimeout(() => { fontsReady = true; }, 3500);
-} else {
-  fontsReady = true;
-}
+/* ---- Join CTA：螢火蟲粒子場 + 點擊爆破 ---- */
+const joinInst = Brand.onView(document.getElementById('join'), () => (p) => {
+  let W,H,host,flies=[],bursts=[];
+  p.setup=()=>{ host=document.querySelector('.join'); W=host.offsetWidth;H=host.offsetHeight; const c=p.createCanvas(W,H); c.parent('join-canvas'); p.pixelDensity(Math.min(window.devicePixelRatio||1,1.5));
+    const n=isMobile()?24:44; for(let i=0;i<n;i++) flies.push({x:p.random(W),y:p.random(H),r:p.random(2,5),ph:p.random(p.TWO_PI),sp:p.random(.2,.6),dx:p.random(-.4,.4)}); };
+  p.draw=()=>{ p.clear();
+    for(const f of flies){ f.ph+=0.05; f.y-=f.sp*(REDUCED?0.3:1); f.x+=f.dx; if(f.y<-10){f.y=H+10;f.x=p.random(W);} const a=130+Math.sin(f.ph)*100;
+      p.noStroke(); p.fill(224,169,46,a*0.4); p.circle(f.x,f.y,f.r*3); p.fill(240,220,150,a); p.circle(f.x,f.y,f.r); }
+    for(let i=bursts.length-1;i>=0;i--){ const b=bursts[i]; b.x+=b.vx;b.y+=b.vy;b.vy+=0.16;b.life-=0.02; p.push(); p.translate(b.x,b.y); p.rotate(b.rot); b.rot+=0.2;
+      p.noStroke(); const c=p.color(b.c); c.setAlpha(255*Math.max(0,b.life)); p.fill(c); p.rectMode(p.CENTER); p.rect(0,0,b.sz,b.sz,3); p.pop(); if(b.life<=0) bursts.splice(i,1); } };
+  p._burst=(x,y)=>{ const cols=[TC.debate,TC.ask,TC.build,TC.listen,'#F3EEE2']; const n=isMobile()?26:44;
+    for(let i=0;i<n;i++){ const a=p.random(p.TWO_PI),s=p.random(3,11); bursts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-3,sz:p.random(6,15),rot:p.random(p.TWO_PI),life:1,c:p.random(cols)}); } };
+  p.windowResized=()=>{ W=host.offsetWidth;H=host.offsetHeight; p.resizeCanvas(W,H); };
+});
+(() => { const t='THINK ✦ DEBATE ✦ EVOLVE ✦ REAL TALK ✦ REAL IMPACT ✦ '; const r=t.repeat(6);
+  document.getElementById('mq-top').textContent=r+r; document.getElementById('mq-bottom').textContent=r+r; })();
+document.getElementById('join-btn').addEventListener('click',()=>{ if(navigator.vibrate) navigator.vibrate([40,30,60]);
+  const cv=document.querySelector('#join-canvas canvas'); if(cv&&joinInst&&joinInst._burst){ const cr=cv.getBoundingClientRect(), r=document.getElementById('join-btn').getBoundingClientRect();
+    joinInst._burst(r.left+r.width/2-cr.left, r.top+r.height/2-cr.top); }
+  setTimeout(()=>{ location.href='about.html#join'; }, 260); });
 </script>
 </body>
 </html>

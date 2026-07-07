@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>關於 — AI 思辨派對｜THINK. DEBATE. EVOLVE.</title>
+<meta name="description" content="AI 思辨派對的品牌宣言、創辦團隊與世界觀。思考不是孤立的，答案也不是單人的。帶著卡關進場，帶著思辨獸離開。">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Fredoka:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/brand.css">
+
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+
+<style>
+/* ============================================================
+   about 頁面專屬樣式（元件層沿用 brand.css）
+   ============================================================ */
+[id]{scroll-margin-top:calc(var(--nav-h) + 16px);}
+
+/* ---------- 1. 品牌宣言 Hero ---------- */
+.manifesto{
+  position:relative;overflow:hidden;text-align:center;
+  padding-block:calc(var(--nav-h) + 96px) 110px;
+}
+#manifesto-canvas{position:absolute;inset:0;z-index:0;pointer-events:none;}
+#manifesto-canvas canvas{display:block;}
+.manifesto__inner{position:relative;z-index:2;max-width:900px;margin-inline:auto;}
+.manifesto__eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:26px;}
+.manifesto__words{
+  font-family:var(--font-display);font-weight:900;line-height:.98;letter-spacing:-.015em;
+  font-size:clamp(3rem,10vw,7.2rem);color:var(--ink);
+}
+.manifesto__words .w{display:block;}
+.manifesto__words .w--debate{
+  color:var(--red);font-style:italic;
+  text-shadow:0 0 34px rgba(192,57,43,.28);
+}
+.manifesto__words .w--evolve{
+  -webkit-text-stroke:2px var(--ink);color:transparent;
+}
+.manifesto__zh{
+  font-family:var(--font-display);font-weight:700;font-size:clamp(1.15rem,2.4vw,1.7rem);
+  color:var(--ink-soft);margin-top:30px;letter-spacing:.04em;
+}
+.manifesto__zh b{color:var(--red);font-weight:900;}
+.manifesto__rule{
+  width:74px;height:4px;background:var(--red);margin:34px auto 0;border-radius:2px;
+  box-shadow:24px 0 0 -1px var(--c-ask), -24px 0 0 -1px var(--ink);
+}
+.manifesto__meta{
+  margin-top:30px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+}
+
+/* ---------- 2. 為什麼需要 ---------- */
+.why-grid{
+  display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
+  gap:52px;align-items:center;margin-top:48px;
+}
+.why-list{display:flex;flex-direction:column;}
+.why-item{
+  display:flex;gap:20px;padding:24px 18px;border-top:1px solid var(--line);
+  cursor:default;transition:background .2s,transform .2s;border-radius:0 var(--radius) var(--radius) 0;
+  outline:none;
+}
+.why-item:last-child{border-bottom:1px solid var(--line);}
+.why-item__no{
+  font-family:var(--font-mono);font-size:.78rem;font-weight:600;color:var(--ink-soft);
+  padding-top:6px;min-width:34px;transition:color .2s;
+}
+.why-item__key{
+  font-family:var(--font-display);font-weight:900;font-size:clamp(1.1rem,2vw,1.4rem);
+  line-height:1.4;transition:color .2s;
+}
+.why-item__desc{color:var(--ink-soft);font-size:.95rem;line-height:1.75;margin-top:6px;max-width:46ch;}
+.why-item.is-on,.why-item:hover,.why-item:focus-visible{
+  background:var(--card);box-shadow:inset 4px 0 0 var(--red);transform:translateX(4px);
+}
+.why-item.is-on .why-item__no,.why-item:hover .why-item__no{color:var(--red);}
+.why-item.is-on .why-item__key,.why-item:hover .why-item__key{color:var(--red);}
+/* node 圖 */
+.why-map{position:relative;}
+.why-svg{width:100%;height:auto;display:block;}
+.why-svg .wlink{stroke:var(--line);stroke-width:2;transition:stroke .25s,stroke-width .25s;}
+.why-svg .wnode circle.core{fill:var(--card);stroke:#A99C86;stroke-width:2;transition:.25s;}
+.why-svg .wnode text{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.08em;
+  fill:var(--ink-soft);text-anchor:middle;transition:fill .25s;text-transform:uppercase;
+}
+.why-svg .wnode .zh{font-family:'Noto Sans TC',sans-serif;font-size:13px;font-weight:700;fill:var(--ink);letter-spacing:.05em;}
+.why-svg .wnode.is-lit circle.core{
+  fill:var(--red-bright);stroke:var(--red);
+  filter:drop-shadow(0 0 10px rgba(192,57,43,.55));
+}
+.why-svg .wnode.is-lit text{fill:var(--red);}
+.why-svg .wnode.is-lit .zh{fill:#FFFDF6;}
+.why-svg .wlink.is-lit{stroke:var(--red);stroke-width:3;}
+.why-svg .whub circle{fill:var(--ink);}
+.why-svg .whub text{fill:var(--paper);font-family:'Noto Serif TC',serif;font-weight:900;font-size:16px;text-anchor:middle;}
+@keyframes hub-pulse{0%,100%{r:46;}50%{r:49;}}
+
+/* ---------- 3. 創辦人區 ---------- */
+.founders{background:var(--paper-2);border-block:1px solid var(--line);}
+.f-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:34px 0 26px;}
+.f-btn{
+  font-family:var(--font-display);font-weight:700;font-size:1.05rem;letter-spacing:.02em;
+  background:var(--card);border:1px solid var(--line);border-radius:999px;padding:10px 26px;
+  color:var(--ink-soft);box-shadow:var(--soft-sm);
+  transition:.16s cubic-bezier(.34,1.56,.64,1);
+}
+.f-btn:hover{transform:translateY(-2px);box-shadow:var(--soft);color:var(--ink);}
+.f-btn.is-active{background:var(--red);color:#FBEFE0;border-color:var(--red);box-shadow:0 4px 0 #4d1212;}
+.f-grid{
+  display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);
+  gap:44px;align-items:stretch;
+}
+.f-stage{
+  position:relative;aspect-ratio:4/5;max-height:640px;overflow:hidden;
+  background:var(--ink);border:1px solid var(--line);border-radius:var(--radius-lg);
+  box-shadow:var(--soft);
+}
+.f-slide{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;
+  opacity:0;transform:scale(1.045);
+  transition:opacity .55s ease,transform .8s cubic-bezier(.2,.8,.2,1);
+  will-change:opacity,transform;
+}
+.f-slide.is-on{opacity:1;transform:scale(1);}
+/* 掃描線 + glitch */
+.f-stage::after{
+  content:"";position:absolute;inset:0;z-index:3;pointer-events:none;opacity:.16;
+  background:repeating-linear-gradient(0deg,rgba(26,22,19,.4) 0 1px,transparent 1px 4px);
+  mix-blend-mode:multiply;
+}
+.f-scanband{
+  position:absolute;left:0;right:0;top:-18%;height:16%;z-index:4;pointer-events:none;opacity:0;
+  background:linear-gradient(180deg,transparent,rgba(243,238,226,.35) 45%,rgba(122,31,31,.28) 55%,transparent);
+  mix-blend-mode:screen;
+}
+.f-stage.is-glitch .f-scanband{animation:f-scan .5s ease-out 1;}
+@keyframes f-scan{0%{opacity:1;top:-18%;}100%{opacity:0;top:104%;}}
+.f-stage.is-glitch .f-slide.is-on{animation:f-jitter .42s steps(3) 1;}
+@keyframes f-jitter{
+  0%{transform:scale(1.02) translateX(0);filter:contrast(1.25) saturate(1.2);}
+  33%{transform:scale(1.02) translateX(-7px);}
+  66%{transform:scale(1.01) translateX(5px);filter:contrast(1.1);}
+  100%{transform:scale(1) translateX(0);filter:none;}
+}
+.f-stage__tag{position:absolute;top:14px;left:14px;z-index:5;}
+/* 雷達浮層（右下角，不蓋臉） */
+.f-radar{
+  position:absolute;right:12px;bottom:12px;z-index:5;width:196px;height:196px;
+  background:rgba(255,253,246,.88);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--soft-sm);backdrop-filter:blur(2px);
+}
+.f-radar canvas{display:block;border-radius:var(--radius);}
+/* 右側資訊卡 */
+.f-panel{display:flex;flex-direction:column;justify-content:center;gap:0;}
+.f-panel__result{font-family:var(--font-mono);font-size:.82rem;letter-spacing:.1em;color:var(--red);text-transform:lowercase;}
+.f-panel__name{
+  font-family:var(--font-display);font-weight:900;font-size:clamp(3rem,7vw,5rem);
+  line-height:1;margin:8px 0 4px;
+}
+.f-panel__role{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft);}
+.f-panel__axis{
+  font-family:var(--font-display);font-weight:700;font-size:1.3rem;color:var(--ink);
+  margin-top:22px;padding-top:20px;border-top:1px solid var(--line);
+}
+.f-panel__traits{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.f-panel__quote{
+  margin-top:26px;font-family:var(--font-display);font-weight:700;font-size:1.06rem;
+  line-height:1.7;color:var(--ink-soft);border-left:4px solid var(--red);padding-left:16px;
+}
+.f-panel__dots{display:flex;gap:8px;margin-top:30px;}
+.f-dot{width:34px;height:5px;border-radius:3px;background:var(--line);transition:background .3s;}
+.f-dot.is-on{background:var(--red);}
+
+/* ---------- 4. 世界觀：問題之城 ---------- */
+.city-sec .lead{max-width:56ch;}
+.city{
+  --mx:50%;--my:50%;
+  position:relative;margin-top:44px;padding:26px;border:1.5px solid var(--red);
+  border-radius:var(--radius-lg);background:var(--card);box-shadow:var(--soft);
+  background-image:
+    linear-gradient(rgba(216,207,189,.5) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(216,207,189,.5) 1px,transparent 1px);
+  background-size:36px 36px;overflow:hidden;
+}
+.city::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:0;opacity:var(--spot,0);
+  background:radial-gradient(300px circle at var(--mx) var(--my),rgba(224,169,46,.22),transparent 65%);
+  transition:opacity .3s;
+}
+.city__compass{
+  position:absolute;top:14px;right:20px;z-index:2;font-family:var(--font-mono);
+  font-size:.66rem;letter-spacing:.14em;color:var(--ink-soft);text-transform:uppercase;
+}
+.city__grid{
+  position:relative;z-index:1;display:grid;gap:16px;
+  grid-template-columns:repeat(4,1fr);
+  grid-template-areas:
+    "sprout sprout vine hall"
+    "lab    camp   vine hall"
+    "lab    camp   market market";
+}
+.city__zone{
+  --zc:var(--red);position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+  min-height:150px;padding:18px;background:var(--paper);border:2px dashed var(--line);
+  border-radius:var(--radius);transition:.22s cubic-bezier(.34,1.4,.6,1);overflow:hidden;
+}
+.city__zone::before{
+  content:"";position:absolute;inset:0;background:var(--zc);opacity:0;transition:opacity .22s;
+}
+.city__zone>*{position:relative;}
+.city__zone:hover,.city__zone:focus-visible{
+  border-style:solid;border-color:var(--zc);transform:translateY(-5px);
+  box-shadow:0 12px 26px rgba(40,30,20,.16);
+}
+.city__zone:hover::before,.city__zone:focus-visible::before{opacity:.13;}
+.city__zone:hover .city__ico{transform:rotate(-8deg) scale(1.25);}
+.zone-sprout{grid-area:sprout;}
+.zone-vine{grid-area:vine;}
+.zone-hall{grid-area:hall;min-height:240px;}
+.zone-lab{grid-area:lab;}
+.zone-camp{grid-area:camp;}
+.zone-market{grid-area:market;}
+.city__ico{font-size:1.9rem;transition:transform .3s cubic-bezier(.34,1.56,.64,1);width:fit-content;}
+.city__code{
+  position:absolute;top:12px;right:14px;font-family:var(--font-mono);font-size:.62rem;
+  letter-spacing:.12em;color:var(--zc);border:1px solid var(--zc);
+  padding:2px 8px;border-radius:6px;opacity:.85;background:var(--card);
+}
+.city__name{font-family:var(--font-display);font-weight:900;font-size:1.25rem;margin-top:8px;}
+.city__en{font-family:var(--font-mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--zc);margin-top:2px;}
+.city__desc{font-size:.86rem;color:var(--ink-soft);line-height:1.6;margin-top:8px;}
+.city__go{
+  font-family:var(--font-mono);font-size:.68rem;letter-spacing:.08em;color:var(--zc);
+  margin-top:10px;opacity:0;transform:translateX(-6px);transition:.22s;
+}
+.city__zone:hover .city__go,.city__zone:focus-visible .city__go{opacity:1;transform:translateX(0);}
+.city__legend{margin-top:20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:relative;z-index:1;}
+
+/* ---------- 5. #join 報名 ---------- */
+.join-sec{
+  background:linear-gradient(180deg,#241A14 0%,#1A1310 100%);color:#F3EEE2;
+  position:relative;overflow:hidden;
+}
+.join-sec .eyebrow{color:var(--c-ask);}
+.join__quote{
+  font-family:var(--font-display);font-weight:900;line-height:1.35;
+  font-size:clamp(1.9rem,4.6vw,3.2rem);color:#F8F1E4;max-width:22ch;
+}
+.join__quote .mk{color:var(--c-ask);}
+.join__quote .mk--red{color:var(--red-bright);}
+.join__sub{color:rgba(233,225,210,.78);margin-top:16px;max-width:44ch;line-height:1.8;}
+.join__pick{
+  font-family:var(--font-mono);font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--c-ask);margin:52px 0 20px;display:flex;align-items:center;gap:14px;
+}
+.join__pick::after{content:"";flex:1;height:1px;background:rgba(233,225,210,.2);}
+.role-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.role-card{
+  --rc:var(--c-ask);text-align:left;background:rgba(255,253,246,.05);
+  border:1px solid rgba(233,225,210,.18);border-radius:var(--radius);padding:20px 18px;
+  color:#F3EEE2;transition:.18s cubic-bezier(.34,1.4,.6,1);position:relative;
+}
+.role-card:hover{transform:translateY(-4px);border-color:var(--rc);background:rgba(255,253,246,.09);}
+.role-card.is-picked{
+  background:var(--card);color:var(--ink);border-color:var(--rc);
+  box-shadow:0 0 0 3px var(--rc),0 14px 30px rgba(0,0,0,.35);
+}
+.role-card__ico{font-size:1.6rem;}
+.role-card__name{font-family:var(--font-display);font-weight:900;font-size:1.12rem;margin-top:10px;line-height:1.35;}
+.role-card__tag{font-family:var(--font-mono);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;margin-top:6px;color:var(--rc);}
+.role-card__check{
+  position:absolute;top:12px;right:14px;width:22px;height:22px;border-radius:50%;
+  background:var(--rc);color:#1A1613;font-size:.8rem;display:grid;place-items:center;
+  opacity:0;transform:scale(.4);transition:.22s cubic-bezier(.34,1.7,.5,1);
+}
+.role-card.is-picked .role-card__check{opacity:1;transform:scale(1);}
+.join__msg{
+  margin-top:24px;min-height:74px;display:flex;align-items:center;gap:14px;
+  background:rgba(255,253,246,.06);border:1px dashed rgba(233,225,210,.25);
+  border-left:5px solid var(--c-ask);border-radius:var(--radius);padding:16px 20px;
+  font-family:var(--font-display);font-weight:700;font-size:1.08rem;line-height:1.6;
+  transition:opacity .3s,transform .3s;
+}
+.join__msg.is-flash{opacity:0;transform:translateY(6px);}
+.join__msg .emo{font-size:1.5rem;flex-shrink:0;}
+.join__cta{margin-top:36px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.join__hint{font-family:var(--font-mono);font-size:.7rem;letter-spacing:.08em;color:rgba(233,225,210,.5);}
+
+/* ---------- RWD 860 / 560 ---------- */
+@media (max-width:860px){
+  .why-grid{grid-template-columns:1fr;gap:34px;}
+  .why-map{max-width:440px;margin-inline:auto;}
+  .f-grid{grid-template-columns:1fr;gap:28px;}
+  .f-stage{max-width:480px;margin-inline:auto;width:100%;}
+  .city__grid{
+    grid-template-columns:repeat(2,1fr);
+    grid-template-areas:
+      "sprout sprout"
+      "vine   hall"
+      "lab    camp"
+      "market market";
+  }
+  .role-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width:560px){
+  .manifesto{padding-block:calc(var(--nav-h) + 64px) 76px;}
+  .f-radar{width:150px;height:150px;}
+  .city{padding:16px;}
+  .city__grid{grid-template-columns:1fr;grid-template-areas:"sprout" "vine" "hall" "lab" "camp" "market";}
+  .city__zone,.zone-hall{min-height:130px;}
+  .role-grid{grid-template-columns:1fr;}
+  .why-item{gap:12px;padding:20px 12px;}
+}
+
+/* ---------- 降級 ---------- */
+@media (prefers-reduced-motion:reduce){
+  .f-slide{transition:opacity .3s ease;transform:none;}
+  .f-slide.is-on{transform:none;}
+  .f-stage.is-glitch .f-slide.is-on,.f-stage.is-glitch .f-scanband{animation:none;}
+  .why-item.is-on,.why-item:hover{transform:none;}
+  .city__zone:hover,.city__zone:focus-visible,.role-card:hover{transform:none;}
+  .role-card__check{transition:opacity .2s;}
+  .join__msg{transition:none;}
+  .why-svg .whub circle{animation:none!important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= 1. 品牌宣言 HERO ================= -->
+<header class="manifesto" id="manifesto">
+  <div id="manifesto-canvas" aria-hidden="true"></div>
+  <div class="container manifesto__inner">
+    <span class="chip manifesto__eyebrow"><span class="chip__dot"></span><span class="mono">ABOUT · BRAND MANIFESTO</span></span>
+    <h1 class="manifesto__words" aria-label="THINK. DEBATE. EVOLVE.">
+      <span class="w">THINK.</span>
+      <span class="w w--debate">DEBATE.</span>
+      <span class="w w--evolve">EVOLVE.</span>
+    </h1>
+    <p class="manifesto__zh">思考不是孤立的，<b>答案也不是單人的</b>。</p>
+    <div class="manifesto__rule" aria-hidden="true"></div>
+    <div class="manifesto__meta">
+      <span class="badge">EST. 2025 · TAIPEI</span>
+      <span class="chip"><span class="chip__dot" style="background:var(--c-ask);"></span>Open Space 聚會</span>
+      <span class="chip"><span class="chip__dot" style="background:var(--c-connect);"></span>AI DISCOURSE PARTY</span>
+    </div>
+  </div>
+</header>
+
+<!-- ================= 2. 為什麼需要 AI 思辨派對 ================= -->
+<section class="section" id="why">
+  <div class="container">
+    <span class="eyebrow">WHY · 為什麼需要一場思辨派對</span>
+    <h2 class="display display--lg" style="margin-top:12px;">工具越來越多，<br><span class="underline-mark">答案卻越來越模糊</span></h2>
+
+    <div class="why-grid">
+      <div class="why-list" id="why-list">
+        <div class="why-item" data-node="1" tabindex="0">
+          <span class="why-item__no num">01</span>
+          <div>
+            <p class="why-item__key">AI 工具越來越多，問題卻越來越模糊。</p>
+            <p class="why-item__desc">每週都有新模型、新外掛、新工作流。但「我到底該解決什麼問題」這件事，反而在資訊洪流裡失焦了。</p>
+          </div>
+        </div>
+        <div class="why-item" data-node="2" tabindex="0">
+          <span class="why-item__no num">02</span>
+          <div>
+            <p class="why-item__key">大家都在學工具，卻缺少交流的現場。</p>
+            <p class="why-item__desc">教學影片看了一百部，真正卡住的那一步卻沒人可問。學習不缺教材，缺的是一張可以攤開卡關的桌子。</p>
+          </div>
+        </div>
+        <div class="why-item" data-node="3" tabindex="0">
+          <span class="why-item__no num">03</span>
+          <div>
+            <p class="why-item__key">真正的突破，常來自不同背景的碰撞。</p>
+            <p class="why-item__desc">工程師的瓶頸，設計師一句話點破；教育者的困惑，創業者早就踩過。跨域的火花，才是靈感真正的來源。</p>
+          </div>
+        </div>
+        <div class="why-item" data-node="4" tabindex="0">
+          <span class="why-item__no num">04</span>
+          <div>
+            <p class="why-item__key">思辨不是辯輸贏，而是把問題拆清楚。</p>
+            <p class="why-item__desc">我們不比誰的立場大聲。把一個模糊的焦慮，拆成三個可以動手的子問題——這才是思辨的手感。</p>
+          </div>
+        </div>
+        <div class="why-item" data-node="5" tabindex="0">
+          <span class="why-item__no num">05</span>
+          <div>
+            <p class="why-item__key">我們要創造可以放心提問的場域。</p>
+            <p class="why-item__desc">沒有講台、沒有蠢問題。在這裡「我不懂」是入場券，不是弱點。每一個提問，都會被接住。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="why-map" aria-hidden="true">
+        <svg class="why-svg" id="why-svg" viewBox="0 0 440 440">
+          <line class="wlink" data-link="1" x1="220" y1="220" x2="220" y2="66"/>
+          <line class="wlink" data-link="2" x1="220" y1="220" x2="372" y2="164"/>
+          <line class="wlink" data-link="3" x1="220" y1="220" x2="322" y2="366"/>
+          <line class="wlink" data-link="4" x1="220" y1="220" x2="118" y2="366"/>
+          <line class="wlink" data-link="5" x1="220" y1="220" x2="68" y2="164"/>
+          <line class="wlink" x1="220" y1="66" x2="372" y2="164" opacity=".4"/>
+          <line class="wlink" x1="372" y1="164" x2="322" y2="366" opacity=".4"/>
+          <line class="wlink" x1="322" y1="366" x2="118" y2="366" opacity=".4"/>
+          <line class="wlink" x1="118" y1="366" x2="68" y2="164" opacity=".4"/>
+          <line class="wlink" x1="68" y1="164" x2="220" y2="66" opacity=".4"/>
+
+          <g class="wnode" data-node="1">
+            <circle class="core" cx="220" cy="66" r="30"/>
+            <text class="zh" x="220" y="71">失焦</text>
+            <text x="220" y="24">blur</text>
+          </g>
+          <g class="wnode" data-node="2">
+            <circle class="core" cx="372" cy="164" r="30"/>
+            <text class="zh" x="372" y="169">孤學</text>
+            <text x="372" y="122">alone</text>
+          </g>
+          <g class="wnode" data-node="3">
+            <circle class="core" cx="322" cy="366" r="30"/>
+            <text class="zh" x="322" y="371">碰撞</text>
+            <text x="322" y="418">collide</text>
+          </g>
+          <g class="wnode" data-node="4">
+            <circle class="core" cx="118" cy="366" r="30"/>
+            <text class="zh" x="118" y="371">拆解</text>
+            <text x="118" y="418">unpack</text>
+          </g>
+          <g class="wnode" data-node="5">
+            <circle class="core" cx="68" cy="164" r="30"/>
+            <text class="zh" x="68" y="169">安心</text>
+            <text x="68" y="122">safe</text>
+          </g>
+
+          <g class="whub">
+            <circle cx="220" cy="220" r="46" style="animation:hub-pulse 3.4s ease-in-out infinite;"/>
+            <circle cx="220" cy="220" r="52" fill="none" stroke="#7A1F1F" stroke-width="1.5" stroke-dasharray="4 6"/>
+            <text x="220" y="214">思辨</text>
+            <text x="220" y="234" style="font-size:11px;font-family:'IBM Plex Mono',monospace;font-weight:400;letter-spacing:.1em;">PARTY</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 3. 創辦人區 ================= -->
+<section class="section founders" id="founders">
+  <div class="container">
+    <span class="eyebrow">FOUNDERS · 創辦團隊</span>
+    <h2 class="display display--lg" style="margin-top:12px;">what's your <span class="underline-mark">discourse vibe</span> today?</h2>
+    <p class="lead" style="margin-top:14px;">四個人，四種思辨光譜。我們把自己也攤在雷達圖上——因為要求別人誠實提問之前，先誠實面對自己。</p>
+
+    <div class="f-tabs" id="f-tabs" role="tablist" aria-label="切換創辦人"></div>
+
+    <div class="f-grid">
+      <div class="f-stage" id="f-stage">
+        <span class="badge f-stage__tag mono" id="f-tag">RESULT // …</span>
+        <div class="f-scanband" aria-hidden="true"></div>
+        <div class="f-radar radar-wrap" id="f-radar" aria-hidden="true"></div>
+      </div>
+
+      <div class="f-panel" aria-live="polite">
+        <span class="f-panel__result mono" id="f-result">result // strategic driver</span>
+        <h3 class="f-panel__name" id="f-name">Bogi</h3>
+        <span class="f-panel__role" id="f-role">CO-FOUNDER / CEO</span>
+        <p class="f-panel__axis" id="f-axis">Vision &amp; Leadership</p>
+        <div class="f-panel__traits" id="f-traits"></div>
+        <p class="f-panel__quote" id="f-quote">…</p>
+        <div class="f-panel__dots" id="f-dots" aria-hidden="true"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 4. 世界觀：問題之城 ================= -->
+<section class="section city-sec bg-grid" id="worldview">
+  <div class="container">
+    <span class="eyebrow">WORLDVIEW · 品牌世界觀</span>
+    <h2 class="display display--lg" style="margin-top:12px;">AI 議題園，是一座<span class="underline-mark">由問題組成的城市</span></h2>
+    <p class="lead" style="margin-top:14px;">每一個沒被解決的疑問，都是一塊街區。滑過地圖點亮它們，走進任何一區，都會遇到正在拆同一題的人。</p>
+
+    <div class="city" id="city">
+      <span class="city__compass">N ↑ · QUESTION CITY MAP v1.0</span>
+      <div class="city__grid">
+        <a class="city__zone zone-sprout" href="topic-market.html" style="--zc:var(--c-ask);">
+          <span class="city__code">ZONE 01</span>
+          <span class="city__ico">🌱</span>
+          <span class="city__name">Prompt 苗圃</span>
+          <span class="city__en">Prompt Nursery</span>
+          <span class="city__desc">還說不清楚的念頭先種在這裡。一句好提問，是所有街區的種子。</span>
+          <span class="city__go">→ 前往議題園</span>
+        </a>
+        <a class="city__zone zone-vine" href="topic-market.html" style="--zc:var(--c-listen);">
+          <span class="city__code">ZONE 02</span>
+          <span class="city__ico">🌿</span>
+          <span class="city__name">Workflow 藤道</span>
+          <span class="city__en">Workflow Vine Way</span>
+          <span class="city__desc">工作流像藤蔓，纏對了就開花。交換彼此的自動化路徑。</span>
+          <span class="city__go">→ 前往議題園</span>
+        </a>
+        <a class="city__zone zone-hall" href="topic-market.html" style="--zc:var(--c-debate);">
+          <span class="city__code">ZONE 03</span>
+          <span class="city__ico">🔥</span>
+          <span class="city__name">Debate Hall 辯論廳</span>
+          <span class="city__en">Debate Hall</span>
+          <span class="city__desc">城市正中央的圓形大廳。立場在這裡摩擦，但沒有人會被燒傷——我們辯題目，不辯人。</span>
+          <span class="city__go">→ 前往議題園</span>
+        </a>
+        <a class="city__zone zone-lab" href="topic-market.html" style="--zc:var(--c-build);">
+          <span class="city__code">ZONE 04</span>
+          <span class="city__ico">🔧</span>
+          <span class="city__name">Builder Lab 實作所</span>
+          <span class="city__en">Builder Lab</span>
+          <span class="city__desc">想法在這裡長出手腳。demo 比簡報大聲，原型比觀點誠實。</span>
+          <span class="city__go">→ 前往議題園</span>
+        </a>
+        <a class="city__zone zone-camp" href="community.html" style="--zc:var(--c-connect);">
+          <span class="city__code">ZONE 05</span>
+          <span class="city__ico">⛺</span>
+          <span class="city__name">Human Camp 人類營地</span>
+          <span class="city__en">Human Camp</span>
+          <span class="city__desc">聊技術聊累了，回營地聊人。焦慮、轉職、身而為人的部分。</span>
+          <span class="city__go">→ 前往採集隊</span>
+        </a>
+        <a class="city__zone zone-market" href="topic-market.html" style="--zc:var(--red);">
+          <span class="city__code">ZONE 06</span>
+          <span class="city__ico">🔮</span>
+          <span class="city__name">Future Market 未來市集</span>
+          <span class="city__en">Future Market</span>
+          <span class="city__desc">交易尚未發生的事：五年後的職業、十年後的教室、還沒被發明的問題。</span>
+          <span class="city__go">→ 前往議題園</span>
+        </a>
+      </div>
+      <div class="city__legend">
+        <span class="chip"><span class="chip__dot" style="background:var(--c-ask);"></span>種問題</span>
+        <span class="chip"><span class="chip__dot" style="background:var(--c-debate);"></span>辨問題</span>
+        <span class="chip"><span class="chip__dot" style="background:var(--c-build);"></span>做問題</span>
+        <span class="chip"><span class="chip__dot" style="background:var(--c-connect);"></span>連問題</span>
+        <span class="mono" style="font-size:.68rem;color:var(--ink-soft);letter-spacing:.08em;">CLICK ANY ZONE TO ENTER →</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 5. JOIN 報名 ================= -->
+<section class="section join-sec" id="join">
+  <div class="container">
+    <span class="eyebrow">JOIN · 報名下一場</span>
+    <h2 class="join__quote" style="margin-top:14px;">帶著<span class="mk">卡關</span>進場，<br>帶著<span class="mk--red mk">思辨獸</span>離開。</h2>
+    <p class="join__sub">不需要準備簡報，不需要是專家。你只需要帶一個真實的問題——剩下的，交給現場的化學反應。</p>
+
+    <p class="join__pick" id="join-pick-label">選你的入場身份 · PICK YOUR ENTRY PASS</p>
+    <div class="role-grid" id="role-grid" role="group" aria-labelledby="join-pick-label"></div>
+
+    <div class="join__msg" id="join-msg" aria-live="polite">
+      <span class="emo">🎟️</span>
+      <span id="join-msg-text">點一張卡，看看這場派對會怎麼接住你。</span>
+    </div>
+
+    <div class="join__cta">
+      <a class="btn btn--primary" id="join-cta" href="#join">🎉 加入下一場派對</a>
+      <a class="btn btn--ghost" href="topic-market.html" style="background:transparent;color:#F3EEE2;border-color:rgba(233,225,210,.3);">先逛逛議題園</a>
+      <span class="join__hint">NEXT PARTY · 名額有限 · 問題無限</span>
+    </div>
+  </div>
+</section>
+
+<script src="assets/brand.js"></script>
+<script>
+Brand.initChrome('about');
+(function () {
+  'use strict';
+  var REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ============================================================
+     創辦人資料（好改：值 0–1 對應五軸 vision/systems/depth/action/community）
+     圖片：先試 ASCII 檔名，onerror fallback 到中文檔名
+     ============================================================ */
+  var AXES = ['vision', 'systems', 'depth', 'action', 'community'];
+  var FOUNDERS = [
+    {
+      id: 'bogi', name: 'Bogi', role: 'CO-FOUNDER / CEO',
+      result: 'result // strategic driver',
+      axis: 'Vision & Leadership',
+      traits: ['clear-minded', 'optimistic', 'decisive'],
+      quote: '「方向想清楚了，剩下的只是把霧走成路。」',
+      img: 'founder-bogi.png', fallback: '創辦人雷達圖_Bogi.png',
+      values: [0.95, 0.62, 0.72, 0.86, 0.70]
+    },
+    {
+      id: 'kevin', name: 'Kevin', role: 'CO-FOUNDER / CMO',
+      result: 'result // culture amplifier',
+      axis: 'Brand & Growth',
+      traits: ['insightful', 'connective', 'brand-sensitive'],
+      quote: '「品牌不是喊出來的，是一群人一起相信出來的。」',
+      img: 'founder-kevin.png', fallback: '創辦人雷達圖_Kevin.png',
+      values: [0.82, 0.58, 0.68, 0.76, 0.95]
+    },
+    {
+      id: 'jean', name: 'Jean', role: 'CO-FOUNDER / COO',
+      result: 'result // execution orchestrator',
+      axis: 'Operations & Community',
+      traits: ['steady', 'attentive', 'people-centered'],
+      quote: '「每一場好對話的背後，都有人默默把椅子排好。」',
+      img: 'founder-jean.png', fallback: '創辦人雷達圖_Jean.png',
+      values: [0.62, 0.82, 0.66, 0.92, 0.90]
+    },
+    {
+      id: 'buzz', name: 'Buzz', role: 'CO-FOUNDER / CTO',
+      result: 'result // architect mind',
+      axis: 'Technology & Systems',
+      traits: ['structured', 'curious', 'exacting'],
+      quote: '「複雜不可怕，沒被拆解過的複雜才可怕。」',
+      img: 'founder-buzz.png', fallback: '創辦人雷達圖_Buzz.png',
+      values: [0.72, 0.96, 0.90, 0.78, 0.60]
+    }
+  ];
+
+  /* ============================================================
+     1) 宣言 Hero：同心圓節點生成藝術（p5 · Brand.onView）
+     ============================================================ */
+  (function initManifesto() {
+    var host = document.getElementById('manifesto-canvas');
+    if (!host || typeof Brand.onView !== 'function') return;
+
+    var sketch = function (p) {
+      var W, H, nodes = [], t = 0;
+      var RINGS = [
+        { r: 0.18, n: 8,  dir: 1  },
+        { r: 0.32, n: 14, dir: -1 },
+        { r: 0.48, n: 20, dir: 1  },
+        { r: 0.66, n: 28, dir: -1 }
+      ];
+      function build() {
+        nodes = [];
+        RINGS.forEach(function (ring, ri) {
+          for (var i = 0; i < ring.n; i++) {
+            nodes.push({
+              ri: ri, ring: ring,
+              a: (i / ring.n) * Math.PI * 2,
+              ox: 0, oy: 0,
+              sz: ri === 0 ? 4.4 : (3.6 - ri * 0.55),
+              red: (i % 5 === 0)
+            });
+          }
+        });
+      }
+      function size() { W = host.clientWidth; H = host.clientHeight; }
+      p.setup = function () {
+        size();
+        var c = p.createCanvas(W, H); c.parent(host);
+        build();
+        if (REDUCED) p.frameRate(20);
+      };
+      p.draw = function () {
+        p.clear();
+        if (!REDUCED) t += 0.0018;
+        var cx = W / 2, cy = H * 0.52, base = Math.min(W, H) * 0.98;
+        var ctx = p.drawingContext;
+
+        // 環（極淡）
+        ctx.save();
+        ctx.strokeStyle = 'rgba(26,22,19,0.07)';
+        ctx.lineWidth = 1;
+        RINGS.forEach(function (ring) {
+          ctx.beginPath();
+          ctx.arc(cx, cy, ring.r * base, 0, Math.PI * 2);
+          ctx.stroke();
+        });
+        ctx.restore();
+
+        // 節點位置
+        var pos = nodes.map(function (nd) {
+          var a = nd.a + t * nd.ring.dir * (1 + nd.ri * 0.35);
+          var x = cx + Math.cos(a) * nd.ring.r * base;
+          var y = cy + Math.sin(a) * nd.ring.r * base * 0.92;
+          // 滑鼠靠近 → 節點擴散
+          if (!REDUCED && p.mouseX > 0 && p.mouseY > 0) {
+            var dx = x - p.mouseX, dy = y - p.mouseY;
+            var d = Math.sqrt(dx * dx + dy * dy);
+            if (d < 130 && d > 0.001) {
+              var f = (130 - d) / 130 * 30;
+              nd.ox += (dx / d * f - nd.ox) * 0.18;
+              nd.oy += (dy / d * f - nd.oy) * 0.18;
+            } else { nd.ox *= 0.9; nd.oy *= 0.9; }
+          }
+          return [x + nd.ox, y + nd.oy];
+        });
+
+        // 同環相鄰連線（細髮絲紅）
+        ctx.save();
+        ctx.strokeStyle = 'rgba(122,31,31,0.14)';
+        ctx.lineWidth = 1;
+        var off = 0;
+        RINGS.forEach(function (ring) {
+          for (var i = 0; i < ring.n; i++) {
+            var a2 = pos[off + i], b2 = pos[off + (i + 1) % ring.n];
+            ctx.beginPath(); ctx.moveTo(a2[0], a2[1]); ctx.lineTo(b2[0], b2[1]); ctx.stroke();
+          }
+          off += ring.n;
+        });
+        // 內環放射到中心
+        ctx.strokeStyle = 'rgba(122,31,31,0.10)';
+        for (var s = 0; s < RINGS[0].n; s++) {
+          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(pos[s][0], pos[s][1]); ctx.stroke();
+        }
+        ctx.restore();
+
+        // 節點
+        for (var i2 = 0; i2 < nodes.length; i2++) {
+          var nd2 = nodes[i2], pp = pos[i2];
+          p.noStroke();
+          if (nd2.red) { p.fill(192, 57, 43, 200); }
+          else { p.fill(26, 22, 19, 150); }
+          p.circle(pp[0], pp[1], nd2.sz * 2);
+        }
+
+        // 中央深紅發光節點
+        var pulse = REDUCED ? 0 : Math.sin(t * 42) * 2.5;
+        for (var g = 5; g >= 1; g--) {
+          p.fill(122, 31, 31, 9 * g);
+          p.circle(cx, cy, 34 + g * 13 + pulse * g * 0.5);
+        }
+        p.fill(122, 31, 31); p.circle(cx, cy, 22 + pulse);
+        p.fill(192, 57, 43); p.circle(cx, cy, 12 + pulse * 0.6);
+        p.fill(255, 253, 246, 190); p.circle(cx - 3, cy - 3, 4);
+      };
+      p.windowResized = function () { size(); p.resizeCanvas(W, H); };
+    };
+    Brand.onView(host, function () { return sketch; });
+  })();
+
+  /* ============================================================
+     2) Why：關鍵句 hover ↔ 右側節點亮起
+     ============================================================ */
+  (function initWhy() {
+    var svg = document.getElementById('why-svg');
+    var items = document.querySelectorAll('#why-list .why-item');
+    if (!svg || !items.length) return;
+    function light(n) {
+      items.forEach(function (it) { it.classList.toggle('is-on', it.getAttribute('data-node') === n); });
+      svg.querySelectorAll('.wnode').forEach(function (g) { g.classList.toggle('is-lit', g.getAttribute('data-node') === n); });
+      svg.querySelectorAll('.wlink[data-link]').forEach(function (l) { l.classList.toggle('is-lit', l.getAttribute('data-link') === n); });
+    }
+    items.forEach(function (it) {
+      var n = it.getAttribute('data-node');
+      it.addEventListener('mouseenter', function () { light(n); });
+      it.addEventListener('focus', function () { light(n); });
+    });
+    light('1'); // 預設點亮第一句
+  })();
+
+  /* ============================================================
+     3) 創辦人：交叉淡入 + glitch 掃描 + 雷達 morph
+     ============================================================ */
+  (function initFounders() {
+    var stage = document.getElementById('f-stage');
+    var tabs = document.getElementById('f-tabs');
+    var dots = document.getElementById('f-dots');
+    var radarHost = document.getElementById('f-radar');
+    if (!stage || !tabs) return;
+
+    var elTag = document.getElementById('f-tag');
+    var elResult = document.getElementById('f-result');
+    var elName = document.getElementById('f-name');
+    var elRole = document.getElementById('f-role');
+    var elAxis = document.getElementById('f-axis');
+    var elTraits = document.getElementById('f-traits');
+    var elQuote = document.getElementById('f-quote');
+
+    var idx = 0, timer = null, resumeTimer = null;
+    var AUTO_MS = 2600, RESUME_MS = 6500;
+    var slides = [], btns = [], dotEls = [];
+    var radarTarget = FOUNDERS[0].values.slice();
+
+    // 建立影像層（ASCII 檔名優先，onerror fallback 中文檔名）
+    FOUNDERS.forEach(function (f, i) {
+      var img = document.createElement('img');
+      img.className = 'f-slide';
+      img.alt = f.name + ' — ' + f.role + ' 創辦人雷達圖';
+      img.decoding = 'async';
+      img.onerror = function () { img.onerror = null; img.src = encodeURI(f.fallback); };
+      img.src = f.img;
+      stage.insertBefore(img, stage.firstChild);
+      slides.push(img);
+
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'f-btn';
+      b.setAttribute('role', 'tab');
+      b.textContent = f.name;
+      b.addEventListener('click', function () { manualGo(i); });
+      tabs.appendChild(b);
+      btns.push(b);
+
+      var d = document.createElement('span');
+      d.className = 'f-dot';
+      dots.appendChild(d);
+      dotEls.push(d);
+    });
+
+    function render(i, withGlitch) {
+      idx = i;
+      var f = FOUNDERS[i];
+      slides.forEach(function (s, k) { s.classList.toggle('is-on', k === i); });
+      btns.forEach(function (b, k) {
+        b.classList.toggle('is-active', k === i);
+        b.setAttribute('aria-selected', k === i ? 'true' : 'false');
+      });
+      dotEls.forEach(function (d, k) { d.classList.toggle('is-on', k === i); });
+      elTag.textContent = f.result.toUpperCase();
+      elResult.textContent = f.result;
+      elName.textContent = f.name;
+      elRole.textContent = f.role;
+      elAxis.textContent = f.axis;
+      elQuote.textContent = f.quote;
+      elTraits.innerHTML = '';
+      f.traits.forEach(function (t) {
+        var c = document.createElement('span');
+        c.className = 'chip';
+        c.innerHTML = '<span class="chip__dot"></span>' + t;
+        elTraits.appendChild(c);
+      });
+      radarTarget = f.values.slice();
+      if (withGlitch && !REDUCED) {
+        stage.classList.remove('is-glitch');
+        void stage.offsetWidth; // 重觸發動畫
+        stage.classList.add('is-glitch');
+      }
+    }
+
+    function startAuto() {
+      if (REDUCED) return; // 降級：不自動輪播
+      stopAuto();
+      timer = setInterval(function () { render((idx + 1) % FOUNDERS.length, true); }, AUTO_MS);
+    }
+    function stopAuto() { if (timer) { clearInterval(timer); timer = null; } }
+    function manualGo(i) {
+      render(i, true);
+      stopAuto();
+      clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(startAuto, RESUME_MS); // 暫停數秒後恢復
+    }
+
+    // 雷達 morph：p5 疊層，切換時頂點值 lerp
+    if (radarHost && typeof Brand.onView === 'function' && typeof Brand.radar === 'function') {
+      var cur = FOUNDERS[0].values.slice();
+      var radarSketch = function (p) {
+        var S = 196;
+        function size() { S = radarHost.clientWidth || 196; }
+        p.setup = function () {
+          size();
+          var c = p.createCanvas(S, S); c.parent(radarHost);
+        };
+        p.draw = function () {
+          var k = REDUCED ? 1 : 0.09;
+          for (var i = 0; i < cur.length; i++) cur[i] += (radarTarget[i] - cur[i]) * k;
+          p.clear();
+          Brand.radar(p.drawingContext, cur, {
+            size: S,
+            axes: AXES,
+            stroke: '#7A1F1F',
+            fill: 'rgba(122,31,31,0.16)',
+            dot: '#E0A92E',
+            label: '#5B5348',
+            rScale: 0.33,
+            showLabels: true
+          });
+        };
+        p.windowResized = function () { size(); p.resizeCanvas(S, S); };
+      };
+      Brand.onView(stage, function () { return radarSketch; });
+    }
+
+    // 進入視窗才開始自動輪播、離開就暫停（省資源）
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) { if (!timer && !resumeTimer) startAuto(); }
+        else { stopAuto(); }
+      }, { threshold: 0.15 }).observe(stage);
+    } else { startAuto(); }
+
+    render(0, false);
+  })();
+
+  /* ============================================================
+     4) 問題之城：滑鼠 spotlight
+     ============================================================ */
+  (function initCity() {
+    var city = document.getElementById('city');
+    if (!city) return;
+    if (REDUCED) return; // 降級：只保留 hover 樣式
+    city.addEventListener('mousemove', function (e) {
+      var r = city.getBoundingClientRect();
+      city.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      city.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      city.style.setProperty('--spot', '1');
+    });
+    city.addEventListener('mouseleave', function () {
+      city.style.setProperty('--spot', '0');
+    });
+  })();
+
+  /* ============================================================
+     5) Join：入場身份卡 → 鼓勵文案
+     ============================================================ */
+  (function initJoin() {
+    var grid = document.getElementById('role-grid');
+    var msgBox = document.getElementById('join-msg');
+    var msgText = document.getElementById('join-msg-text');
+    if (!grid) return;
+
+    var ROLES = [
+      { ico: '🧭', name: '新手探索者', tag: 'explorer', color: 'var(--c-ask)',
+        msg: '完全不用會任何工具——你的問題本身就是入場券，好奇心就是最好的裝備。' },
+      { ico: '⚙️', name: 'AI 工具實作者', tag: 'builder', color: 'var(--c-build)',
+        msg: '把你的 workflow 攤開來吧，這裡有人接得住你的技術細節，也有人會問出你沒想過的那一刀。' },
+      { ico: '🏢', name: '品牌團隊導入者', tag: 'team lead', color: 'var(--c-listen)',
+        msg: '從試點到落地的坑，別的團隊都踩過了。來現場交換血淚，比看十份白皮書有用。' },
+      { ico: '📚', name: '教育內容創作者', tag: 'educator', color: 'var(--c-connect)',
+        msg: 'AI 時代的教與學正在被重寫。你的教案、你的困惑，都值得一整桌人陪你思辨。' },
+      { ico: '🚀', name: '創業者', tag: 'founder', color: 'var(--c-debate)',
+        msg: '把商業假設丟進辯論廳，讓不同背景的人輪流敲打它——離開時它會更鋒利。' },
+      { ico: '🧩', name: '只是想找人一起拆問題', tag: 'co-thinker', color: 'var(--c-ask)',
+        msg: '這是最好的身份。老實說，整場思辨派對就是為這句話而存在的。' }
+    ];
+
+    ROLES.forEach(function (r) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'role-card';
+      b.style.setProperty('--rc', r.color);
+      b.setAttribute('aria-pressed', 'false');
+      b.innerHTML =
+        '<span class="role-card__check">✓</span>' +
+        '<span class="role-card__ico">' + r.ico + '</span>' +
+        '<span class="role-card__name" style="display:block;">' + r.name + '</span>' +
+        '<span class="role-card__tag" style="display:block;">ENTRY PASS · ' + r.tag + '</span>';
+      b.addEventListener('click', function () {
+        grid.querySelectorAll('.role-card').forEach(function (c) {
+          c.classList.remove('is-picked');
+          c.setAttribute('aria-pressed', 'false');
+        });
+        b.classList.add('is-picked');
+        b.setAttribute('aria-pressed', 'true');
+        msgBox.style.borderLeftColor = r.color;
+        if (REDUCED) { msgText.textContent = r.msg; }
+        else {
+          msgBox.classList.add('is-flash');
+          setTimeout(function () {
+            msgText.textContent = r.msg;
+            msgBox.classList.remove('is-flash');
+          }, 220);
+        }
+        // 把身份帶進 mailto 主旨，報名信不用重打
+        var cta = document.getElementById('join-cta');
+        if (cta) {
+          cta.href = '#join'
+            + '?subject=' + encodeURIComponent('報名｜AI 思辨派對下一場（' + r.name + '）')
+            + '&body=' + encodeURIComponent('我的入場身份：' + r.name + '\n我想帶來的卡關：');
+        }
+      });
+      grid.appendChild(b);
+    });
+  })();
+})();
+</script>
+</body>
+</html>

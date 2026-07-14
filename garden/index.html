@@ -189,13 +189,10 @@ footer{position:relative;z-index:1;background:rgba(18,12,10,.6);color:rgba(244,2
 <header class="chrome" id="chrome">
   <a href="#hero" class="brand"><span class="dot"></span>AI 思辨派對</a>
   <nav class="nav" id="nav">
-    <a href="#think" data-s="think">卡關</a>
-    <a href="#how" data-s="how">怎麼玩</a>
-    <a href="#real" data-s="real">現場</a>
-    <a href="#beasts" data-s="beasts">思辨獸</a>
-    <a href="#sins" data-s="sins">AI 七宗罪</a>
-    <a href="#founders" data-s="founders">創辦人</a>
-    <a href="#join" data-s="join">加入</a>
+    <a href="index.html" class="on">首頁</a>
+    <a href="topics.html">議題市集</a>
+    <a href="crew.html">採集隊</a>
+    <a href="about.html">關於·報名</a>
   </nav>
 </header>
 
@@ -394,7 +391,6 @@ function upd(){tick=false;
 
   // chrome 深淺 + nav
   if(chrome){chrome.classList.toggle('dark',cur.dataset.dark==='1');chrome.classList.toggle('solid',y>40);}
-  const id=cur.id;navA.forEach(a=>a.classList.toggle('on',a.dataset.s===id));
   if(cue)cue.style.color=cur.dataset.dark==='1'?'rgba(244,236,217,.8)':'var(--ink-soft)';
 
   reveal();

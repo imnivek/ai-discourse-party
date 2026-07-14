@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="nojs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>關於·報名 — AI 思辨派對｜漂浮議題園</title>
+<meta name="description" content="AI 思辨派對的品牌宣言、創辦團隊與世界觀。思考不是孤立的，答案也不是單人的。帶著卡關進場，帶著思辨獸離開。">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-tc-webfont@1.2.0/style.css">
+<link rel="stylesheet" href="garden.css">
+<style>
+.mani{position:relative;min-height:82vh;display:flex;align-items:center;text-align:center;overflow:hidden;isolation:isolate;}
+.mani__bg{position:absolute;inset:0;z-index:-2;background:url('assets/img/scene-join.jpg') center/cover;}
+.mani__bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,12,10,.7),rgba(18,12,10,.88));}
+.mani__words{font-family:var(--font-latin);font-weight:900;line-height:.98;font-size:clamp(2.8rem,10vw,7rem);color:var(--paper);}
+.mani__words .db{color:var(--c-debate);font-style:italic;filter:brightness(1.25);}
+.mani__words .ev{-webkit-text-stroke:2px var(--paper);color:transparent;}
+.mani__zh{font-family:var(--font-display);font-weight:700;font-size:clamp(1.15rem,2.4vw,1.7rem);color:rgba(244,236,217,.82);margin-top:26px;}
+.mani__zh b{color:var(--c-ask);}
+.mani__meta{margin-top:26px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.mani .chip{background:rgba(244,236,217,.1);color:var(--paper);border-color:rgba(244,236,217,.2);}
+
+.why{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin-top:40px;}
+.why__i{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--c-debate);border-radius:var(--radius);padding:24px 22px;box-shadow:var(--soft-sm);transition:transform .3s;}
+.why__i:hover{transform:translateY(-6px);}
+.why__n{font-family:var(--font-latin);font-weight:600;color:var(--c-debate);font-size:.9rem;letter-spacing:.1em;}
+.why__k{font-family:var(--font-display);font-weight:700;font-size:1.2rem;margin:6px 0 8px;}
+.why__d{color:var(--ink-soft);font-size:.94rem;}
+
+.fdrs{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:44px;}
+@media(max-width:900px){.fdrs{grid-template-columns:1fr 1fr;}}@media(max-width:480px){.fdrs{grid-template-columns:1fr;}}
+.fdr{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--soft-sm);transition:transform .35s,box-shadow .35s;border-top:6px solid var(--fc);}
+.fdr:hover{transform:translateY(-8px);box-shadow:var(--soft);}
+.fdr__ph{position:relative;aspect-ratio:1/1;display:grid;place-items:end center;background:radial-gradient(120% 90% at 50% 15%,color-mix(in srgb,var(--fc) 22%,var(--card)),var(--paper-2));overflow:hidden;}
+.fdr__ph img{width:96%;height:100%;object-fit:contain;object-position:bottom;filter:drop-shadow(0 10px 14px rgba(51,41,31,.28));}
+.fdr__b{padding:16px 18px 22px;}
+.fdr__nm{font-family:var(--font-display);font-weight:700;font-size:1.4rem;}
+.fdr__ro{font-family:var(--font-latin);font-size:.66rem;letter-spacing:.14em;color:var(--fc);font-weight:600;margin-top:2px;text-transform:uppercase;}
+.fdr__ax{font-weight:700;font-size:.95rem;margin-top:10px;}
+.fdr__tr{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.fdr__tr span{font-size:.68rem;background:color-mix(in srgb,var(--fc) 16%,#fff);color:color-mix(in srgb,var(--fc) 60%,#000);border:1px solid color-mix(in srgb,var(--fc) 30%,transparent);border-radius:999px;padding:3px 9px;font-weight:600;}
+.fdr__q{margin-top:14px;font-family:var(--font-display);font-size:.95rem;color:var(--ink-soft);border-left:3px solid var(--fc);padding-left:12px;line-height:1.7;}
+
+.zones{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px;}
+@media(max-width:820px){.zones{grid-template-columns:1fr 1fr;}}@media(max-width:520px){.zones{grid-template-columns:1fr;}}
+.zone{position:relative;display:flex;flex-direction:column;justify-content:flex-end;min-height:170px;padding:20px;background:var(--card);border:2px dashed var(--line);border-radius:var(--radius);text-decoration:none;color:inherit;transition:.25s cubic-bezier(.34,1.4,.6,1);overflow:hidden;}
+.zone:hover{border-style:solid;border-color:var(--zc);transform:translateY(-6px);box-shadow:0 14px 30px rgba(40,30,20,.16);}
+.zone__code{position:absolute;top:12px;right:14px;font-family:var(--font-latin);font-size:.62rem;letter-spacing:.1em;color:var(--zc);border:1px solid var(--zc);padding:2px 8px;border-radius:6px;}
+.zone__ico{font-size:1.9rem;}
+.zone__nm{font-family:var(--font-display);font-weight:700;font-size:1.2rem;margin-top:8px;}
+.zone__en{font-family:var(--font-latin);font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;color:var(--zc);}
+.zone__d{font-size:.85rem;color:var(--ink-soft);margin-top:8px;}
+.zone__go{font-family:var(--font-latin);font-size:.7rem;color:var(--zc);margin-top:10px;font-weight:600;}
+
+.roles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:12px;}
+@media(max-width:820px){.roles{grid-template-columns:1fr 1fr;}}@media(max-width:480px){.roles{grid-template-columns:1fr;}}
+.role{text-align:left;background:rgba(255,253,246,.06);border:1px solid rgba(244,236,217,.18);border-radius:var(--radius);padding:20px 18px;color:var(--paper);cursor:pointer;transition:.18s;position:relative;}
+.role:hover{transform:translateY(-4px);border-color:var(--rc);background:rgba(255,253,246,.1);}
+.role.pick{background:var(--card);color:var(--ink);border-color:var(--rc);box-shadow:0 0 0 3px var(--rc),0 14px 30px rgba(0,0,0,.35);}
+.role__ico{font-size:1.5rem;}
+.role__nm{font-family:var(--font-display);font-weight:700;font-size:1.05rem;margin-top:8px;}
+.role__tg{font-family:var(--font-latin);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--rc);margin-top:4px;}
+.jmsg{margin-top:22px;background:rgba(255,253,246,.06);border:1px dashed rgba(244,236,217,.25);border-left:5px solid var(--c-ask);border-radius:var(--radius);padding:16px 20px;font-family:var(--font-display);font-weight:700;font-size:1.05rem;color:var(--paper);display:flex;gap:12px;align-items:center;min-height:70px;}
+.jcta{margin-top:30px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="index.html" class="nav__brand"><span class="dot"></span>AI 思辨派對</a>
+  <button class="nav__burger" aria-label="選單">☰</button>
+  <div class="nav__menu"><a href="index.html">首頁</a><a href="topics.html">議題市集</a><a href="crew.html">採集隊</a><a href="about.html" class="on">關於·報名</a></div>
+</nav>
+
+<!-- 品牌宣言 -->
+<header class="mani">
+  <div class="mani__bg"></div>
+  <div class="wrap">
+    <span class="eyebrow rv in" style="color:var(--c-ask)">About · Brand Manifesto</span>
+    <h1 class="mani__words rv in d1">THINK.<br><span class="db">DEBATE.</span><br><span class="ev">EVOLVE.</span></h1>
+    <p class="mani__zh rv in d2">思考不是孤立的，<b>答案也不是單人的</b>。</p>
+    <div class="mani__meta rv in d3"><span class="chip">EST. 2025 · TAIPEI</span><span class="chip"><span class="cdot"></span>Open Space 聚會</span><span class="chip"><span class="cdot" style="background:var(--c-connect)"></span>AI Discourse Party</span></div>
+  </div>
+</header>
+
+<!-- 為什麼 -->
+<section class="section sec--paper" id="why"><div class="wrap">
+  <div class="sec-head"><span class="eyebrow rv">Why · 為什麼需要一場思辨派對</span>
+    <h2 class="h-sec rv d1">工具越來越多，<span class="mark">答案卻越來越模糊</span></h2></div>
+  <div class="why" id="whyGrid"></div>
+</div></section>
+
+<!-- 創辦人 -->
+<section class="section sec--tint" style="--tint:var(--c-debate)" id="founders"><div class="wrap">
+  <div class="sec-head"><span class="eyebrow rv">Founders · 創辦團隊</span>
+    <h2 class="h-sec rv d1">四個人，四種<span class="mark">思辨光譜</span>。</h2>
+    <p class="lead rv d2">要求別人誠實提問之前，先誠實面對自己。這是把漂浮議題園種起來的四顆腦袋。</p></div>
+  <div class="fdrs" id="fdrGrid"></div>
+</div></section>
+
+<!-- 世界觀 問題之城 -->
+<section class="section sec--paper" id="worldview"><div class="wrap">
+  <div class="sec-head"><span class="eyebrow rv">Worldview · 品牌世界觀</span>
+    <h2 class="h-sec rv d1">議題園，是一座<span class="mark">由問題組成的城市</span></h2>
+    <p class="lead rv d2">每一個沒被解決的疑問，都是一塊街區。走進任何一區，都會遇到正在拆同一題的人。</p></div>
+  <div class="zones" id="zoneGrid"></div>
+</div></section>
+
+<!-- 報名 -->
+<section class="section sec--dark" id="join"><div class="wrap">
+  <div class="sec-head"><span class="eyebrow rv" style="color:var(--c-ask)">Join · 報名下一場</span>
+    <h2 class="h-sec rv d1">帶著<span style="color:var(--c-ask)">卡關</span>進場，<br>帶著<span style="color:var(--c-debate);filter:brightness(1.3)">思辨獸</span>離開。</h2>
+    <p class="lead rv d2">不需要準備簡報，不需要是專家。你只需要帶一個真實的問題——剩下的，交給現場的化學反應。</p></div>
+  <p class="eyebrow rv" style="margin-top:26px;color:var(--c-ask)">選你的入場身份 · Pick your entry pass</p>
+  <div class="roles" id="roleGrid"></div>
+  <div class="jmsg" id="jmsg"><span style="font-size:1.4rem">🎟️</span><span id="jmsgt">點一張卡，看看這場派對會怎麼接住你。</span></div>
+  <div class="jcta rv"><a class="btn btn--p" href="#join">🎉 加入下一場派對</a><a class="btn btn--g" href="topics.html" style="color:var(--paper)">先逛逛議題市集</a></div>
+</div></section>
+
+<footer class="foot">
+  <div class="foot__links"><a href="index.html">首頁</a><a href="topics.html">議題市集</a><a href="crew.html">採集隊</a><a href="about.html">關於·報名</a></div>
+  <small>AI 思辨派對 · 漂浮議題園 Floating Discourse Garden — 交流產生靈感，思辨激發答案</small>
+</footer>
+
+<script src="garden.js"></script>
+<script>
+var WHY=[
+  ['01','AI 工具越來越多，問題卻越來越模糊。','每週都有新模型、新外掛、新工作流。但「我到底該解決什麼問題」，反而在資訊洪流裡失焦了。'],
+  ['02','大家都在學工具，卻缺少交流的現場。','教學影片看了一百部，真正卡住的那一步卻沒人可問。缺的是一張可以攤開卡關的桌子。'],
+  ['03','真正的突破，常來自不同背景的碰撞。','工程師的瓶頸，設計師一句話點破；教育者的困惑，創業者早就踩過。跨域的火花才是靈感的來源。'],
+  ['04','思辨不是辯輸贏，而是把問題拆清楚。','我們不比誰的立場大聲。把模糊的焦慮，拆成三個可以動手的子問題——這才是思辨的手感。'],
+  ['05','我們要創造可以放心提問的場域。','沒有講台、沒有蠢問題。在這裡「我不懂」是入場券，不是弱點。每個提問都會被接住。'],
+];
+var wg=document.getElementById('whyGrid');
+WHY.forEach(function(w,i){var d=document.createElement('div');d.className='why__i rv d'+((i%4)+1);
+  d.innerHTML='<div class="why__n">'+w[0]+'</div><div class="why__k">'+w[1]+'</div><div class="why__d">'+w[2]+'</div>';wg.appendChild(d);});
+
+var FDR=[
+  {k:'bogi',nm:'Bogi',ro:'CO-FOUNDER / CEO',c:'--c-build',ax:'Vision & Leadership',tr:['clear-minded','optimistic','decisive'],q:'「方向想清楚了，剩下的只是把霧走成路。」'},
+  {k:'kevin',nm:'Kevin',ro:'CO-FOUNDER / CMO',c:'--c-ask',ax:'Brand & Growth',tr:['insightful','connective','brand-sensitive'],q:'「品牌不是喊出來的，是一群人一起相信出來的。」'},
+  {k:'gem',nm:'Gem',ro:'CO-FOUNDER / COO',c:'--c-listen',ax:'Operations & Community',tr:['steady','attentive','people-centered'],q:'「每一場好對話的背後，都有人默默把椅子排好。」'},
+  {k:'bath',nm:'Bath',ro:'CO-FOUNDER / CTO',c:'--c-connect',ax:'Technology & Systems',tr:['structured','curious','exacting'],q:'「複雜不可怕，沒被拆解過的複雜才可怕。」'},
+];
+var fg=document.getElementById('fdrGrid');
+FDR.forEach(function(f,i){var d=document.createElement('div');d.className='fdr rv d'+((i%4)+1);d.style.setProperty('--fc','var('+f.c+')');
+  d.innerHTML='<div class="fdr__ph"><img src="assets/img/founder-'+f.k+'-cut.png" alt="'+f.nm+'" loading="lazy"></div>'+
+    '<div class="fdr__b"><div class="fdr__nm">'+f.nm+'</div><div class="fdr__ro">'+f.ro+'</div>'+
+    '<div class="fdr__ax">'+f.ax+'</div><div class="fdr__tr">'+f.tr.map(function(t){return '<span>'+t+'</span>';}).join('')+'</div>'+
+    '<div class="fdr__q">'+f.q+'</div></div>';fg.appendChild(d);});
+
+var ZONES=[
+  ['01','🌱','Prompt 苗圃','Prompt Nursery','還說不清楚的念頭先種在這裡。一句好提問，是所有街區的種子。','--c-ask','topics.html'],
+  ['02','🌿','Workflow 藤道','Workflow Vine Way','工作流像藤蔓，纏對了就開花。交換彼此的自動化路徑。','--c-listen','topics.html'],
+  ['03','🔥','Debate Hall 辯論廳','Debate Hall','城市正中央的圓形大廳。立場在這裡摩擦，但我們辯題目，不辯人。','--c-debate','topics.html'],
+  ['04','🔧','Builder Lab 實作所','Builder Lab','想法在這裡長出手腳。demo 比簡報大聲，原型比觀點誠實。','--c-build','topics.html'],
+  ['05','⛺','Human Camp 人類營地','Human Camp','聊技術聊累了，回營地聊人。焦慮、轉職、身而為人的部分。','--c-connect','crew.html'],
+  ['06','🔮','Future Market 未來市集','Future Market','交易尚未發生的事：五年後的職業、十年後的教室、還沒被發明的問題。','--c-debate','topics.html'],
+];
+var zg=document.getElementById('zoneGrid');
+ZONES.forEach(function(z,i){var a=document.createElement('a');a.className='zone rv d'+((i%3)+1);a.href=z[6];a.style.setProperty('--zc','var('+z[5]+')');
+  a.innerHTML='<span class="zone__code">ZONE '+z[0]+'</span><span class="zone__ico">'+z[1]+'</span><span class="zone__nm">'+z[2]+'</span><span class="zone__en">'+z[3]+'</span><span class="zone__d">'+z[4]+'</span><span class="zone__go">→ 進入</span>';zg.appendChild(a);});
+
+var ROLES=[
+  ['🧭','新手探索者','explorer','--c-ask','完全不用會任何工具——你的問題本身就是入場券，好奇心就是最好的裝備。'],
+  ['⚙️','AI 工具實作者','builder','--c-build','把你的 workflow 攤開來吧，這裡有人接得住技術細節，也有人會問出你沒想過的那一刀。'],
+  ['🏢','品牌團隊導入者','team lead','--c-listen','從試點到落地的坑，別的團隊都踩過了。來現場交換血淚，比看十份白皮書有用。'],
+  ['📚','教育內容創作者','educator','--c-connect','AI 時代的教與學正在被重寫。你的教案、你的困惑，都值得一整桌人陪你思辨。'],
+  ['🚀','創業者','founder','--c-debate','把商業假設丟進辯論廳，讓不同背景的人輪流敲打它——離開時它會更鋒利。'],
+  ['🧩','只是想找人一起拆問題','co-thinker','--c-ask','這是最好的身份。老實說，整場思辨派對就是為這句話而存在的。'],
+];
+var rg=document.getElementById('roleGrid'),jm=document.getElementById('jmsg'),jt=document.getElementById('jmsgt');
+ROLES.forEach(function(r){var b=document.createElement('button');b.className='role';b.style.setProperty('--rc','var('+r[3]+')');
+  b.innerHTML='<div class="role__ico">'+r[0]+'</div><div class="role__nm">'+r[1]+'</div><div class="role__tg">Entry pass · '+r[2]+'</div>';
+  b.addEventListener('click',function(){rg.querySelectorAll('.role').forEach(function(c){c.classList.remove('pick');});b.classList.add('pick');jm.style.borderLeftColor='var('+r[3]+')';jt.textContent=r[4];});
+  rg.appendChild(b);});
+</script>
+</body>
+</html>

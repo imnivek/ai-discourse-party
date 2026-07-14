@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="nojs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>採集隊 — AI 思辨派對｜思辨獸圖鑑</title>
+<meta name="description" content="五種思辨能量，五隻思辨獸。參加派對、丟出卡關、促成結晶，就能採集、解鎖牠們。">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Instrument+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-tc-webfont@1.2.0/style.css">
+<link rel="stylesheet" href="garden.css">
+<style>
+.dex{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:18px;margin-top:44px;}
+.mon{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--soft-sm);transition:transform .35s,box-shadow .35s;border-top:6px solid var(--bc);text-align:center;}
+.mon:hover{transform:translateY(-10px);box-shadow:var(--soft);}
+.mon__ph{aspect-ratio:1/1;display:grid;place-items:center;padding:14px;background:radial-gradient(120% 100% at 50% 20%,color-mix(in srgb,var(--bc) 20%,var(--card)),var(--paper-2));}
+.mon__ph img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 12px 16px rgba(51,41,31,.24));transition:transform .4s;}
+.mon:hover .mon__ph img{transform:scale(1.08) rotate(-2deg);}
+.mon__b{padding:14px 16px 22px;}
+.mon__nm{font-family:var(--font-display);font-weight:700;font-size:1.5rem;}
+.mon__tg{font-family:var(--font-latin);font-size:.62rem;letter-spacing:.12em;color:#fff;background:var(--bc);padding:3px 10px;border-radius:7px;display:inline-block;margin-top:4px;}
+.mon__el{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:12px;font-size:.82rem;color:var(--ink-soft);font-weight:600;}
+.mon__el img{width:22px;height:22px;}
+.mon__d{font-size:.88rem;color:var(--ink-soft);margin-top:10px;line-height:1.7;text-align:left;}
+.steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px;}
+@media(max-width:760px){.steps3{grid-template-columns:1fr;}}
+.st{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:26px 22px;box-shadow:var(--soft-sm);}
+.st__n{font-family:var(--font-latin);font-weight:600;font-size:2.2rem;color:var(--c-build);line-height:1;}
+.st__t{font-family:var(--font-display);font-weight:700;font-size:1.25rem;margin:6px 0 8px;}
+.st__d{color:var(--ink-soft);font-size:.94rem;}
+.group-img{margin-top:44px;border-radius:var(--radius-lg);overflow:hidden;border:1px solid var(--line);box-shadow:var(--soft);}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="index.html" class="nav__brand"><span class="dot"></span>AI 思辨派對</a>
+  <button class="nav__burger" aria-label="選單">☰</button>
+  <div class="nav__menu"><a href="index.html">首頁</a><a href="topics.html">議題市集</a><a href="crew.html" class="on">採集隊</a><a href="about.html">關於·報名</a></div>
+</nav>
+
+<header class="phero">
+  <div class="phero__bg" style="background-image:url('assets/img/scene-beasts.jpg')"></div>
+  <div class="wrap">
+    <span class="eyebrow rv in">04 · Meet the crew</span>
+    <h1 class="rv in d1">思辨獸<span class="mark" style="background:linear-gradient(transparent 62%,rgba(216,162,74,.5) 62%)">採集隊</span></h1>
+    <p class="rv in d2">每一種思辨能量，都有一隻對應的思辨獸。牠們住在漂浮議題園裡，等你把卡關帶來、把牠們一隻隻採集回家。</p>
+  </div>
+</header>
+
+<!-- 圖鑑 -->
+<section class="section sec--paper" id="dex"><div class="wrap">
+  <div class="sec-head"><span class="eyebrow rv">Discourse Beast Dex · 思辨獸圖鑑</span>
+    <h2 class="h-sec rv d1">五隻獸，<span class="mark">五種思辨能量</span>。</h2></div>
+  <div class="dex" id="dexGrid"></div>
+  <div class="group-img rv"><img src="assets/img/beasts-group.jpg" alt="五思辨獸群像" loading="lazy" onerror="this.parentNode.style.display='none'"></div>
+</div></section>
+
+<!-- 怎麼採集 -->
+<section class="section sec--tint" style="--tint:var(--c-build)" id="how"><div class="wrap">
+  <div class="sec-head"><span class="eyebrow rv">How to collect · 怎麼採集</span>
+    <h2 class="h-sec rv d1">帶著卡關進場，<span class="mark">帶著思辨獸離開</span>。</h2></div>
+  <div class="steps3">
+    <div class="st rv d1"><div class="st__n">01</div><div class="st__t">參加派對</div><div class="st__d">帶一個真實的卡關來，貼上議題牆。你的問題就是召喚思辨獸的種子。</div></div>
+    <div class="st rv d2"><div class="st__n">02</div><div class="st__t">促成結晶</div><div class="st__d">在深聊裡提問、傾聽、碰撞、動手——每一種思辨行為，都會餵養對應的獸。</div></div>
+    <div class="st rv d3"><div class="st__n">03</div><div class="st__t">採集解鎖</div><div class="st__d">當一段對話真的長出答案，牠就現身了。把牠收進你的採集隊圖鑑。</div></div>
+  </div>
+  <div style="margin-top:34px" class="rv"><a class="btn btn--p" href="about.html#join">🌱 加入下一場派對</a></div>
+</div></section>
+
+<footer class="foot">
+  <div class="foot__links"><a href="index.html">首頁</a><a href="topics.html">議題市集</a><a href="crew.html">採集隊</a><a href="about.html">關於·報名</a></div>
+  <small>AI 思辨派對 · 漂浮議題園 Floating Discourse Garden — 交流產生靈感，思辨激發答案</small>
+</footer>
+
+<script src="garden.js"></script>
+<script>
+var MON=[
+  {t:'ask',nm:'問問獸',tag:'ASK · 提問者',c:'--c-ask',el:'icon-seed',ew:'問題種子',d:'好奇心是派對的燃料。牠愛蒐集問題種子——把你最想問卻沒人敢問的那句，交給牠。'},
+  {t:'listen',nm:'聽聽獸',tag:'LISTEN · 傾聽者',c:'--c-listen',el:'icon-drop',ew:'觀點水滴',d:'先聽再拆，讓討論不會失速。牠採集每一個被好好聽見的想法。'},
+  {t:'debate',nm:'辨辨獸',tag:'DEBATE · 思辨者',c:'--c-debate',el:'icon-shard',ew:'辯證碎片',d:'把議題拆到本質，問出那個沒人敢問的為什麼。牠收觀點互相校正時迸出的火花。'},
+  {t:'build',nm:'做做獸',tag:'BUILD · 實作者',c:'--c-build',el:'icon-gear',ew:'行動齒輪',d:'已經在做工具或流程，經驗最扎實。牠蒐集每一個能立刻試的下一步。'},
+  {t:'connect',nm:'連連獸',tag:'CONNECT · 連結者',c:'--c-connect',el:'icon-knot',ew:'連結節點',d:'擅長串人串資源，讓對的問題遇上對的人。牠採集每一次剛好的相遇。'},
+];
+var dg=document.getElementById('dexGrid');
+MON.forEach(function(m,i){var d=document.createElement('div');d.className='mon rv d'+((i%4)+1);d.style.setProperty('--bc','var('+m.c+')');
+  d.innerHTML='<div class="mon__ph"><img src="assets/img/beast-'+m.t+'.png" alt="'+m.nm+'" loading="lazy"></div>'+
+    '<div class="mon__b"><div class="mon__nm">'+m.nm+'</div><span class="mon__tg">'+m.tag+'</span>'+
+    '<div class="mon__el"><img src="assets/img/'+m.el+'.png" alt="" onerror="this.style.display=\'none\'">想採集：'+m.ew+'</div>'+
+    '<div class="mon__d">'+m.d+'</div></div>';dg.appendChild(d);});
+</script>
+</body>
+</html>

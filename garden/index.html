@@ -367,7 +367,7 @@ chapters.forEach(ch=>ch._layerKey=ch.dataset.scene+'|'+(ch.dataset.tint||'d'));
 const revEls=[...document.querySelectorAll('.rv')];
 function reveal(){for(const el of revEls){if(el.classList.contains('in'))continue;const r=el.getBoundingClientRect();if(r.top<innerHeight*0.92&&r.bottom>-60)el.classList.add('in');}}
 
-const bar=document.getElementById('bar'),chrome=document.getElementById('chrome'),cue=document.getElementById('cue');
+const bar=document.getElementById('bar'),chromeEl=document.getElementById('chrome'),cue=document.getElementById('cue');
 const navA=[...document.querySelectorAll('#nav a')];
 let tick=false,activeKey=null;
 function upd(){tick=false;
@@ -390,7 +390,7 @@ function upd(){tick=false;
     const L=layers[key];if(L)L.img.style.transform=`scale(${(1.04+prog*0.22).toFixed(3)})`;}
 
   // chrome 深淺 + nav
-  if(chrome){chrome.classList.toggle('dark',cur.dataset.dark==='1');chrome.classList.toggle('solid',y>40);}
+  if(chromeEl){chromeEl.classList.toggle('dark',cur.dataset.dark==='1');chromeEl.classList.toggle('solid',y>40);}
   if(cue)cue.style.color=cur.dataset.dark==='1'?'rgba(244,236,217,.8)':'var(--ink-soft)';
 
   reveal();

@@ -5,9 +5,8 @@ document.documentElement.classList.remove('nojs');
   var burger=document.querySelector('.nav__burger'),menu=document.querySelector('.nav__menu');
   if(burger&&menu){burger.addEventListener('click',function(){menu.classList.toggle('open');});
     menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){menu.classList.remove('open');});});}
-  // 捲動浮現（純捲動驅動，不依賴 IntersectionObserver）
-  var rev=[].slice.call(document.querySelectorAll('.rv'));
-  function reveal(){for(var i=0;i<rev.length;i++){var el=rev[i];if(el.classList.contains('in'))continue;
+  // 捲動浮現（純捲動驅動；每次即時重查 .rv，才抓得到 JS 動態生成的卡片）
+  function reveal(){var rev=document.querySelectorAll('.rv');for(var i=0;i<rev.length;i++){var el=rev[i];if(el.classList.contains('in'))continue;
     var r=el.getBoundingClientRect();if(r.top<innerHeight*0.92&&r.bottom>-60)el.classList.add('in');}}
   var t=false;function on(){if(!t){t=true;requestAnimationFrame(function(){t=false;reveal();});}}
   addEventListener('scroll',on,{passive:true});addEventListener('resize',on);addEventListener('load',reveal);reveal();

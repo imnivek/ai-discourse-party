@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-Hant" class="nojs">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,6 +68,8 @@ body::after{content:"";position:fixed;inset:0;z-index:9998;pointer-events:none;o
 /* reveal */
 .rv{opacity:0;transform:translateY(40px);transition:opacity 1s cubic-bezier(.2,.7,.2,1),transform 1s cubic-bezier(.2,.7,.2,1);}
 .rv.in{opacity:1;transform:none;}
+/* 防呆：JS 若沒跑，文字一律顯示（不因動畫被藏起來）*/
+html.nojs .rv{opacity:1;transform:none;transition:none;}
 .rv.d1{transition-delay:.1s;}.rv.d2{transition-delay:.2s;}.rv.d3{transition-delay:.3s;}.rv.d4{transition-delay:.4s;}
 
 /* buttons */
@@ -318,6 +320,7 @@ footer{background:#160f0d;color:rgba(244,236,217,.55);text-align:center;padding:
 <footer>AI 思辨派對 · 漂浮議題園 Floating Discourse Garden — 交流產生靈感，思辨激發答案</footer>
 
 <script>
+document.documentElement.classList.remove('nojs');  // JS 有跑 → 交給下方 reveal 控制顯示
 const REDUCED=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 
@@ -372,11 +375,11 @@ FOUNDERS.forEach((f,i)=>{const d=document.createElement('div');d.className='foun
     <div class="founder__nm">${f.nm}</div><div class="founder__ti">${f.ti}</div>`;
   fg.appendChild(d);});
 
-/* reveal */
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in');}),{threshold:.14});
-document.querySelectorAll('.rv:not(.in)').forEach(el=>io.observe(el));
+/* reveal —— 純捲動驅動，不依賴 IntersectionObserver（更可靠）*/
+const revEls=[...document.querySelectorAll('.rv')];
+function reveal(){for(const el of revEls){if(el.classList.contains('in'))continue;const r=el.getBoundingClientRect();if(r.top<innerHeight*0.92&&r.bottom>-60)el.classList.add('in');}}
 
-/* scroll: progress + parallax + chrome + nav */
+/* scroll: progress + parallax + chrome + nav（全部 null 防護）*/
 const bar=document.getElementById('bar'),chrome=document.getElementById('chrome');
 const scenes=[...document.querySelectorAll('[data-dark]')];
 const plx=[...document.querySelectorAll('[data-parallax]')];
@@ -384,18 +387,18 @@ const navA=[...document.querySelectorAll('#nav a')];
 let tick=false;
 function upd(){tick=false;
   const y=scrollY,docH=document.documentElement.scrollHeight-innerHeight;
-  bar.style.width=(docH>0?y/docH*100:0)+'%';
-  if(!REDUCED)plx.forEach(el=>{const r=el.parentElement.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight){const sp=parseFloat(el.dataset.parallax);
+  if(bar)bar.style.width=(docH>0?y/docH*100:0)+'%';
+  if(!REDUCED)plx.forEach(el=>{const p=el.parentElement;if(!p)return;const r=p.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight){const sp=parseFloat(el.dataset.parallax)||0;
     if(el.classList.contains('scene__bg'))el.style.transform=`translateY(${(-(r.top)*sp*0.4).toFixed(1)}px) scale(1.12)`;
     else el.style.transform=`translateY(${(r.top*sp).toFixed(1)}px)`;}});
-  // chrome dark + solid by current section
   let cur=scenes[0];for(const s of scenes){const r=s.getBoundingClientRect();if(r.top<=innerHeight*0.5&&r.bottom>innerHeight*0.5){cur=s;break;}}
-  chrome.classList.toggle('dark',cur.dataset.dark==='1');
-  chrome.classList.toggle('solid',y>40);
-  const id=cur.id;navA.forEach(a=>a.classList.toggle('on',a.dataset.s===id));
+  if(cur&&chrome){chrome.classList.toggle('dark',cur.dataset.dark==='1');chrome.classList.toggle('solid',y>40);const id=cur.id;navA.forEach(a=>a.classList.toggle('on',a.dataset.s===id));}
+  reveal();
 }
 addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(upd);}},{passive:true});
-addEventListener('resize',upd);upd();
+addEventListener('resize',upd);
+reveal();upd();
+addEventListener('load',upd);
 </script>
 </body>
 </html>
